@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useContext, createContext, useCallback } from "react";
 import {
   ArrowRight, Menu, X, ExternalLink, Leaf, Users, Warehouse,
   Truck, Building2, Globe, Scale, Brain, Satellite, Zap,
@@ -10,11 +10,100 @@ import {
 } from "lucide-react";
 import lucentImage from "@/imports/image.png";
 import lucentLogo from "@/assets/Lucent Ag Logo new.png";
-
+import leaderAdvisor1 from "@/assets/Advisor.png";
+import leaderFounderCEO from "@/assets/CEO.png";
+import leaderAdvisor2 from "@/assets/Advisor2.png";
+ 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types & Routing
 // ─────────────────────────────────────────────────────────────────────────────
-type Page = "home" | "about" | "team";
+type Page = "home" | "about" | "team" | "ecosystem" | "solutions" | "intelligence" | "careers";
+type ModalType = "demo" | "contact" | null;
+
+interface Leader {
+  name: string;
+  role: string;
+  tags: string[];
+  image: ""; // from "next/image" — swap to `string` if using plain paths
+}
+
+const leaders: Leader[] = [
+  {
+    name: "Name",
+    role: "Advisor",
+    tags: [
+      "Principal at VC",
+      "Startup Advisor",
+      "Former investor at Creative Ventures",
+      "MBA, University of Chicago (Chicago Booth)",
+    ],
+    image: leaderAdvisor1,
+  },
+  {
+    name: "Name",
+    role: "Founder/CEO",
+    tags: [
+      "Systems Builder",
+      "Product Leader",
+      "MSc, Information & Automation Engineering",
+    ],
+    image: leaderFounderCEO,
+  },
+  {
+    name: "Name",
+    role: "Advisor",
+    tags: [
+      "Sustainability Strategist",
+      "Partnerships Expert",
+      "Former Program Manager at the United Nations",
+      "MSc, Environmental Engineering",
+    ],
+    image: leaderAdvisor2,
+  },
+];
+
+const LEADERS: Leader[] = [
+  {
+    name: "Name",
+    role: "Advisor 1",
+    tags: [
+      "Principal at VC",
+      "Startup Advisor",
+      "Former investor at Creative Ventures",
+      "MBA, University of Chicago (Chicago Booth)",
+    ],
+    image: leaderAdvisor1,
+  },
+  {
+    name: "Name",
+    role: "Founder/CEO",
+    tags: [
+      "Systems Builder",
+      "Product Leader",
+      "MSc, Information & Automation Engineering",
+    ],
+    image: leaderFounderCEO,
+  },
+  {
+    name: "Name",
+    role: "Advisor 2",
+    tags: [
+      "Sustainability Strategist",
+      "Partnerships Expert",
+      "Former Program Manager at the United Nations",
+      "MSc, Environmental Engineering",
+    ],
+    image: leaderAdvisor2,
+  },
+  // remaining slots stay empty placeholders — grid still renders 6 total below
+];
+
+interface ModalCtxValue {
+  open: (m: ModalType) => void;
+  close: () => void;
+}
+const ModalCtx = createContext<ModalCtxValue>({ open: () => {}, close: () => {} });
+function useModal() { return useContext(ModalCtx); }
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Design tokens
@@ -132,16 +221,13 @@ function Reveal({ children, className = "", delay = 0 }: {
   );
 }
 
-function DemoBtn({ className = "", dark = false }: { className?: string; dark?: boolean }) {
+function DemoBtn({ className = "" }: { className?: string }) {
+  const { open } = useModal();
   return (
-    <a href="#"
-      className={`inline-flex items-center gap-2 font-medium rounded-full transition-all duration-250 ${
-        dark
-          ? "bg-[#C8922A] text-white hover:bg-[#b07d22] hover:shadow-[0_4px_22px_rgba(200,146,42,0.38)]"
-          : "bg-[#C8922A] text-white hover:bg-[#b07d22] hover:shadow-[0_4px_22px_rgba(200,146,42,0.38)]"
-      } ${className}`}>
+    <button onClick={() => open("demo")}
+      className={`inline-flex items-center gap-2 font-medium rounded-full transition-all duration-250 bg-[#C8922A] text-white hover:bg-[#b07d22] hover:shadow-[0_4px_22px_rgba(200,146,42,0.38)] ${className}`}>
       Request a Demo <ArrowRight className="w-4 h-4" />
-    </a>
+    </button>
   );
 }
 
@@ -365,9 +451,8 @@ function GridBg() {
 interface NavProps { page: Page; navigate: (p: Page) => void; }
 
 const COMPANY_ITEMS: { label: string; desc: string; target: Page; Icon: React.FC<any> }[] = [
-  { label: "About",   desc: "Our story and mission",   target: "about", Icon: Info },
-  { label: "Team",    desc: "People and partnerships", target: "team",  Icon: Users },
-  { label: "Careers", desc: "Join the Lucent Ag team", target: "team",  Icon: Briefcase },
+  { label: "About", desc: "Our story and mission",   target: "about", Icon: Info },
+  { label: "Team",  desc: "People and partnerships", target: "team",  Icon: Users },
 ];
 
 function GlobalNav({ page, navigate }: NavProps) {
@@ -411,9 +496,6 @@ function GlobalNav({ page, navigate }: NavProps) {
         </button>
 
         <nav className="hidden lg:flex items-center gap-7" aria-label="Main navigation">
-          {(["Platform", "Ecosystem", "Solutions", "Intelligence"] as const).map(l => (
-            <a key={l} href="#" className="text-[13px] font-medium text-white/48 hover:text-white transition-colors duration-150">{l}</a>
-          ))}
           <div ref={dropRef} className="relative" onMouseEnter={openDrop} onMouseLeave={closeDrop}>
             <button aria-haspopup="true" aria-expanded={dropOpen} onKeyDown={handleKeyDown}
               className="flex items-center gap-1 text-[13px] font-medium text-white/48 hover:text-white transition-colors duration-150 outline-none focus-visible:ring-2 focus-visible:ring-[#C8922A] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0C1F14] rounded-sm px-0.5">
@@ -458,10 +540,7 @@ function GlobalNav({ page, navigate }: NavProps) {
 
       {mobileOpen && (
         <div className="lg:hidden bg-[#0C1F14] border-t border-white/8 px-6 py-7 flex flex-col gap-4">
-          {["Platform", "Ecosystem", "Solutions", "Intelligence"].map(l => (
-            <a key={l} href="#" className="text-[16px] text-white/65 hover:text-white transition-colors" onClick={() => setMobileOpen(false)}>{l}</a>
-          ))}
-          <div className="border-t border-white/8 pt-4 mt-1 flex flex-col gap-3">
+          <div className="flex flex-col gap-3">
             <p className="text-[10px] text-white/30 uppercase tracking-widest" style={{ fontFamily: "'Geist Mono', monospace" }}>Company</p>
             {COMPANY_ITEMS.map(item => (
               <button key={item.label} onClick={() => { navigate(item.target); setMobileOpen(false); }}
@@ -581,7 +660,7 @@ function HeroSection() {
           </a>
         </div>
         <div className="mt-16 flex flex-wrap gap-x-8 gap-y-3">
-          {[{ label: "Network nodes online", value: "284,391", live: true }, { label: "Tonnes tracked today", value: "14,820 t" }, { label: "Active markets", value: "6 countries" }].map(s => (
+          {[{ label: "Network nodes online", value: "0", live: true }, { label: "Tonnes tracked today", value: "0 t" }, { label: "Active markets", value: "0 countries" }].map(s => (
             <div key={s.label} className="flex items-center gap-2">
               {s.live && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />}
               <span className="text-[11.5px] text-white/32" style={{ fontFamily: "'Geist Mono', monospace" }}>{s.label}</span>
@@ -712,10 +791,10 @@ function EcosystemSection() {
 }
 
 const OS_LAYERS = [
-  { id: "intelligence", idx: "01", label: "Intelligence Layer", tagline: "See everything. Know everything.", title: "AI that reads the entire value chain in real time", body: "Satellite imagery, IoT sensors, weighbridge feeds and market signals fuse into a single intelligence layer — giving every participant the visibility previously held only by the world's largest commodity traders.", caps: ["Satellite crop monitoring & yield estimation", "Predictive demand and price forecasting", "AI-assisted quality grading at the hub", "Supply / demand matching engine"], img: IMG.satellite, imgAlt: "Satellite Earth view of agricultural regions", kpis: [{ v: "2.4M ha", l: "monitored" }, { v: "87%", l: "price forecast accuracy" }] },
-  { id: "commerce", idx: "02", label: "Commerce Layer", tagline: "Trade with certainty.", title: "A verified marketplace for every staple commodity", body: "Farmers, aggregators and buyers transact on a structured marketplace with embedded quality verification, smart contracts and escrow. No distress sales. No payment risk.", caps: ["Buyer–seller matching with quality filters", "Smart contracts with automated escrow", "Forward contract structuring", "Integrated dispute resolution"], img: IMG.dashboard, imgAlt: "Digital commodity trading dashboard", kpis: [{ v: "$1.8B+", l: "facilitated" }, { v: "98.4%", l: "escrow success" }] },
+  { id: "intelligence", idx: "01", label: "Intelligence Layer", tagline: "See everything. Know everything.", title: "AI that reads the entire value chain in real time", body: "Satellite imagery, IoT sensors, weighbridge feeds and market signals fuse into a single intelligence layer — giving every participant the visibility previously held only by the world's largest commodity traders.", caps: ["Satellite crop monitoring & yield estimation", "Predictive demand and price forecasting", "AI-assisted quality grading at the hub", "Supply / demand matching engine"], img: IMG.satellite, imgAlt: "Satellite Earth view of agricultural regions", kpis: [{ v: "0", l: "monitored" }, { v: "0", l: "price forecast accuracy" }] },
+  { id: "commerce", idx: "02", label: "Commerce Layer", tagline: "Trade with certainty.", title: "A verified marketplace for every staple commodity", body: "Farmers, aggregators and buyers transact on a structured marketplace with embedded quality verification, smart contracts and escrow. No distress sales. No payment risk.", caps: ["Buyer–seller matching with quality filters", "Smart contracts with automated escrow", "Forward contract structuring", "Integrated dispute resolution"], img: IMG.dashboard, imgAlt: "Digital commodity trading dashboard", kpis: [{ v: "0", l: "facilitated" }, { v: "0", l: "escrow success" }] },
   // { id: "logistics", idx: "03", label: "Logistics Layer", tagline: "Track every tonne, every mile.", title: "Connected cold chains and last-mile transport", body: "GPS tracking, cold-chain IoT monitoring and digital warehouse receipt issuance reduce in-transit losses. Every tonne has a digital twin from farm gate to final buyer.", caps: ["Real-time vehicle GPS and ETA", "Cold chain temperature monitoring", "Digital warehouse receipts (collateral-ready)", "Load matching and route optimisation"], img: IMG.warehouse, imgAlt: "Modern logistics warehouse operations", kpis: [{ v: "340+", l: "logistics partners" }, { v: "< 3.2%", l: "in-transit loss" }] },
-  { id: "finance", idx: "04", label: "Finance Layer", tagline: "Capital that flows where food flows.", title: "Embedded finance triggered by verified trade", body: "Transaction data on the Lucent Ag rail becomes a credit profile. Working capital, crop insurance and invoice financing activate in the same workflow — no paperwork, no branch visit.", caps: ["Alternative credit scoring from trade data", "Embedded working capital loans", "Crop and transit insurance", "Invoice financing rail"], img: IMG.fintech, imgAlt: "Mobile financial technology for agricultural finance", kpis: [{ v: "28", l: "financial partners" }, { v: "< 4 hrs", l: "avg. credit decision" }] },
+  { id: "finance", idx: "04", label: "Finance Layer", tagline: "Capital that flows where food flows.", title: "Embedded finance triggered by verified trade", body: "Transaction data on the Lucent Ag rail becomes a credit profile. Working capital, crop insurance and invoice financing activate in the same workflow — no paperwork, no branch visit.", caps: ["Alternative credit scoring from trade data", "Embedded working capital loans", "Crop and transit insurance", "Invoice financing rail"], img: IMG.fintech, imgAlt: "Mobile financial technology for agricultural finance", kpis: [{ v: "0", l: "financial partners" }, { v: "0", l: "avg. credit decision" }] },
 ];
 
 function PlatformSection() {
@@ -1266,6 +1345,7 @@ function PartnersSection() {
 }
 
 function HomeCTASection() {
+  const { open } = useModal();
   return (
     <section className="py-20 md:py-24 px-6 xl:px-10">
       <div className="max-w-[1280px] mx-auto">
@@ -1289,7 +1369,7 @@ function HomeCTASection() {
               </div>
               <div className="flex flex-col gap-3 shrink-0">
                 <DemoBtn className="text-[14px] px-8 py-4 justify-center" />
-                <a href="#" className="inline-flex items-center justify-center gap-2 border border-white/15 text-white text-[14px] font-medium px-8 py-4 rounded-full hover:bg-white/8 hover:border-white/28 transition-all">Contact our team</a>
+                <button onClick={() => open("contact")} className="inline-flex items-center justify-center gap-2 border border-white/15 text-white text-[14px] font-medium px-8 py-4 rounded-full hover:bg-white/8 hover:border-white/28 transition-all">Contact our team</button>
               </div>
             </div>
           </div>
@@ -1353,7 +1433,7 @@ function AboutHero() {
           Founded on a simple conviction: the barriers between Africa's harvests and its markets are problems of connectivity, visibility and trust — and they are solvable.
         </p>
         <div className="flex flex-wrap gap-3 mt-10">
-          {["Est. 2023", "African-built", "Global ambition", "6 active markets"].map(b => (
+          {["Est. 2023", "African-built", "Global ambition", "0 active markets"].map(b => (
             <div key={b} className="flex items-center gap-1.5 border border-white/12 rounded-full px-3.5 py-1.5">
               <span className="w-1 h-1 rounded-full bg-[#C8922A]" />
               <span className="text-[11.5px] text-white/50" style={{ fontFamily: "'Geist Mono', monospace" }}>{b}</span>
@@ -1367,30 +1447,232 @@ function AboutHero() {
 
 function OurStory() {
   return (
-    <section className="bg-[#F6F3EE] py-28 md:py-36">
-      <div className="max-w-[1280px] mx-auto px-6 xl:px-10">
-        <Reveal className="mb-16"><Label>Our story</Label></Reveal>
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-start mb-20">
-          <Reveal>
-            <blockquote style={{ fontFamily: "'Instrument Serif', serif" }}
-              className="text-[28px] md:text-[36px] lg:text-[42px] leading-[1.2] text-[#0C1F14] italic">
-              "Every year, hundreds of millions of tonnes of food grown by Africa's farmers never reach consumers. Not because Africa doesn't produce enough. Because the infrastructure between harvest and market is broken."
-            </blockquote>
+    <div>
+      {/* ── Chapter 01: A Curious Little Girl ─────────────────────────────── */}
+      <section className="bg-[#F6F3EE] py-28 md:py-36 overflow-hidden">
+        <div className="max-w-[1280px] mx-auto px-6 xl:px-10">
+          <Reveal className="mb-20">
+            <span className="text-[10px] font-semibold tracking-[0.22em] uppercase text-[#C8922A]"
+              style={{ fontFamily: "'Geist Mono', monospace" }}>Our story</span>
           </Reveal>
-          <Reveal delay={120} className="flex flex-col gap-7 pt-2 lg:pt-6">
-            <p className="text-[16px] text-[#6B7B6E] leading-relaxed">Lucent Ag was built to change that. We started with a simple conviction: the barriers to a functioning post-harvest economy are not technical impossibilities. They are problems of visibility, trust and connectivity — problems that the right platform architecture can solve.</p>
-            <p className="text-[16px] text-[#6B7B6E] leading-relaxed">We set out to build the infrastructure that would make all three possible at continental scale. Not as separate products. As one operating system. Lucent Ag.</p>
+          <div className="grid lg:grid-cols-[1fr_1.15fr] gap-16 lg:gap-24 items-center">
+            <Reveal className="order-2 lg:order-1 flex flex-col gap-7">
+              <div className="flex items-center gap-3 mb-2">
+                <span className="text-[9px] tracking-[0.25em] text-[#C8922A]/60 uppercase"
+                  style={{ fontFamily: "'Geist Mono', monospace" }}>01 — 05</span>
+                <div className="h-px flex-1 bg-[#C8922A]/20" />
+              </div>
+              <h2 style={{ fontFamily: "'Instrument Serif', serif" }}
+                className="text-[42px] md:text-[56px] lg:text-[64px] leading-[1.04] tracking-[-0.01em] text-[#0C1F14] italic">
+                A Curious Little Girl
+              </h2>
+              <p className="text-[17px] text-[#6B7B6E] leading-[1.76] max-w-[420px]">
+                She was eight years old the first time she noticed the contradiction. Walking with her mother through the noise and colour of a Lagos market — mountains of tomatoes, towers of yam, crates of mangoes heavy with ripeness — she saw abundance everywhere she looked.
+              </p>
+              <p className="text-[17px] text-[#6B7B6E] leading-[1.76] max-w-[420px]">
+                And then, on the walk home, she saw neighbours who went without.
+              </p>
+              <div className="w-10 h-0.5 bg-[#C8922A]/40 rounded-full mt-2" />
+            </Reveal>
+            <Reveal delay={140} className="order-1 lg:order-2 relative">
+              <div className="relative rounded-3xl overflow-hidden aspect-[4/5] shadow-[0_24px_80px_rgba(12,31,20,0.18)]">
+                <img src={px(IMG.market, 800, 1000)} alt="Vibrant West African street market, abundant with fresh produce" className="w-full h-full object-cover" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#0C1F14]/35 via-transparent to-transparent" />
+                <div className="absolute bottom-6 left-6 right-6">
+                  <p className="text-[10.5px] text-white/55 leading-snug" style={{ fontFamily: "'Geist Mono', monospace" }}>
+                    A Lagos morning market — where the story begins
+                  </p>
+                </div>
+              </div>
+              {/* Floating accent */}
+              <div className="absolute -right-4 -top-4 w-20 h-20 rounded-full bg-[#C8922A]/8 blur-2xl pointer-events-none" />
+              <div className="absolute -left-6 -bottom-6 w-32 h-32 rounded-full bg-[#1B4332]/6 blur-3xl pointer-events-none" />
+            </Reveal>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Chapter 02: Two Different Realities ───────────────────────────── */}
+      <section className="bg-[#EAE6DE] py-28 md:py-36 overflow-hidden">
+        <div className="max-w-[1280px] mx-auto px-6 xl:px-10">
+          <Reveal className="mb-16 flex items-center gap-4">
+            <span className="text-[9px] tracking-[0.25em] text-[#C8922A]/60 uppercase"
+              style={{ fontFamily: "'Geist Mono', monospace" }}>02 — 05</span>
+            <div className="h-px w-14 bg-[#C8922A]/25" />
+            <span className="text-[9px] tracking-[0.25em] text-[#0C1F14]/30 uppercase"
+              style={{ fontFamily: "'Geist Mono', monospace" }}>Two Different Realities</span>
+          </Reveal>
+
+          {/* Split image panel */}
+          <Reveal className="grid md:grid-cols-2 rounded-3xl overflow-hidden mb-16 shadow-[0_16px_56px_rgba(12,31,20,0.12)]">
+            <div className="relative h-72 md:h-[520px] overflow-hidden">
+              <img src={px(IMG.harvest, 700, 700)} alt="Overflowing baskets of fresh harvested produce" className="w-full h-full object-cover scale-105" />
+              <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[#0C1F14]/40" />
+              <div className="absolute bottom-0 left-0 right-0 p-6">
+                <p className="text-[11px] text-white/70 uppercase tracking-wider" style={{ fontFamily: "'Geist Mono', monospace" }}>Abundance</p>
+                <p className="text-[14px] text-white/80 mt-1 leading-snug">Millions of tonnes grown every season across the continent.</p>
+              </div>
+            </div>
+            <div className="relative h-72 md:h-[520px] overflow-hidden">
+              <img src={px(IMG.community, 700, 700)} alt="Families at market, carefully selecting what they can afford" className="w-full h-full object-cover scale-105" />
+              <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[#0C1F14]/45" />
+              <div className="absolute bottom-0 left-0 right-0 p-6">
+                <p className="text-[11px] text-white/70 uppercase tracking-wider" style={{ fontFamily: "'Geist Mono', monospace" }}>And yet</p>
+                <p className="text-[14px] text-white/80 mt-1 leading-snug">Families still go without — not for lack of food, but lack of connection.</p>
+              </div>
+            </div>
+          </Reveal>
+
+          <Reveal className="max-w-[680px] mx-auto text-center">
+            <p className="text-[18px] md:text-[22px] text-[#0C1F14]/60 leading-[1.7]" style={{ fontFamily: "'Instrument Serif', serif" }}>
+              The gap was not between what Africa grew and what Africa needed. It was the distance between a harvest and a meal — measured in broken supply chains, missing information, and absent finance.
+            </p>
           </Reveal>
         </div>
-        <Reveal className="relative rounded-2xl overflow-hidden h-72 md:h-[440px] border border-border">
-          <img src={px(IMG.processing, 1400, 600)} alt="Modern post-harvest facility with digital operations" className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0C1F14]/40 to-transparent" />
-          <div className="absolute bottom-6 left-8">
-            <p className="text-[11px] text-white/55" style={{ fontFamily: "'Geist Mono', monospace" }}>A Lucent Ag-verified Mini Hub · Digitizing Africa's harvests at source</p>
+      </section>
+
+      {/* ── Chapter 03: The Question ───────────────────────────────────────── */}
+      <section className="bg-[#0C1F14] py-36 md:py-52 relative overflow-hidden">
+        <GridBg />
+        {/* Decorative grain overlay */}
+        <div className="absolute inset-0 opacity-[0.03] pointer-events-none"
+          style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E\")", backgroundSize: "200px 200px" }} />
+
+        <div className="relative z-10 max-w-[1280px] mx-auto px-6 xl:px-10">
+          <Reveal className="flex items-center gap-4 mb-16 justify-center">
+            <span className="text-[9px] tracking-[0.25em] text-[#C8922A]/50 uppercase"
+              style={{ fontFamily: "'Geist Mono', monospace" }}>03 — 05</span>
+            <div className="h-px w-14 bg-[#C8922A]/20" />
+          </Reveal>
+          <Reveal>
+            <div className="w-14 h-0.5 bg-[#C8922A]/50 mx-auto mb-12 rounded-full" />
+            <h2 style={{ fontFamily: "'Instrument Serif', serif" }}
+              className="text-[46px] sm:text-[62px] md:text-[78px] lg:text-[92px] leading-[1.04] tracking-[-0.02em] text-white text-center italic max-w-[900px] mx-auto">
+              How can abundance and hunger exist at the same time?
+            </h2>
+            <div className="w-14 h-0.5 bg-[#C8922A]/50 mx-auto mt-12 rounded-full" />
+          </Reveal>
+          <Reveal delay={200} className="mt-16 text-center">
+            <p className="text-[13px] text-white/25 tracking-[0.18em] uppercase"
+              style={{ fontFamily: "'Geist Mono', monospace" }}>
+              A question she carried for the next two decades
+            </p>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ── Chapter 04: From One Question to One Mission ──────────────────── */}
+      <section className="bg-[#F6F3EE] py-28 md:py-36 overflow-hidden">
+        <div className="max-w-[1280px] mx-auto px-6 xl:px-10">
+          <Reveal className="flex items-center gap-4 mb-20">
+            <span className="text-[9px] tracking-[0.25em] text-[#C8922A]/60 uppercase"
+              style={{ fontFamily: "'Geist Mono', monospace" }}>04 — 05</span>
+            <div className="h-px w-14 bg-[#C8922A]/25" />
+            <span className="text-[9px] tracking-[0.25em] text-[#0C1F14]/30 uppercase"
+              style={{ fontFamily: "'Geist Mono', monospace" }}>From One Question to One Mission</span>
+          </Reveal>
+          <div className="grid lg:grid-cols-[1.2fr_1fr] gap-16 lg:gap-24 items-center">
+            <Reveal>
+              <h2 style={{ fontFamily: "'Instrument Serif', serif" }}
+                className="text-[52px] md:text-[68px] lg:text-[80px] leading-[1.02] tracking-[-0.015em] text-[#0C1F14] mb-8">
+                No one should go hungry.
+              </h2>
+              <div className="w-16 h-0.5 bg-[#C8922A]/50 mb-8 rounded-full" />
+              <p className="text-[17px] text-[#6B7B6E] leading-[1.76] mb-6 max-w-[440px]">
+                That question — carried since childhood — became a mission. Not in spite of Africa's agricultural potential, but because of it.
+              </p>
+              <p className="text-[17px] text-[#6B7B6E] leading-[1.76] max-w-[440px]">
+                Lucent Ag was founded to build the infrastructure that closes the gap between harvest and market — reducing food loss, improving food security, and strengthening the livelihoods of every farmer, aggregator, buyer and community in between.
+              </p>
+            </Reveal>
+            <Reveal delay={140} className="relative">
+              <div className="relative rounded-3xl overflow-hidden aspect-[4/5] shadow-[0_24px_80px_rgba(12,31,20,0.14)]">
+                <img src={px(IMG.aerialCrops, 800, 1000)} alt="Aerial view of thriving African crop fields at dawn" className="w-full h-full object-cover" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#1B4332]/55 via-transparent to-transparent" />
+                <div className="absolute bottom-0 left-0 right-0 p-8">
+                  <blockquote style={{ fontFamily: "'Instrument Serif', serif" }}
+                    className="text-[20px] text-white/90 italic leading-snug">
+                    "Every harvest deserves a market. Every farmer deserves to prosper."
+                  </blockquote>
+                </div>
+              </div>
+              {/* Floating accent stats */}
+              <div className="absolute -left-6 top-1/3 bg-white rounded-2xl shadow-[0_8px_32px_rgba(12,31,20,0.12)] border border-border p-5 hidden lg:flex flex-col gap-1">
+                <span style={{ fontFamily: "'Instrument Serif', serif" }} className="text-[32px] text-[#1B4332] leading-none">40%</span>
+                <span className="text-[11px] text-[#6B7B6E] max-w-[100px] leading-tight">of Africa's harvests lost before reaching consumers</span>
+              </div>
+            </Reveal>
           </div>
-        </Reveal>
-      </div>
-    </section>
+        </div>
+      </section>
+
+      {/* ── Chapter 05: The Journey Continues ────────────────────────────── */}
+      <section className="bg-[#1B4332] py-28 md:py-36 overflow-hidden relative">
+        <GridBg />
+        <div className="relative z-10 max-w-[1280px] mx-auto px-6 xl:px-10">
+          <Reveal className="flex items-center gap-4 mb-16">
+            <span className="text-[9px] tracking-[0.25em] text-[#C8922A]/60 uppercase"
+              style={{ fontFamily: "'Geist Mono', monospace" }}>05 — 05</span>
+            <div className="h-px w-14 bg-[#C8922A]/30" />
+            <span className="text-[9px] tracking-[0.25em] text-white/20 uppercase"
+              style={{ fontFamily: "'Geist Mono', monospace" }}>The Journey Continues</span>
+          </Reveal>
+
+          <div className="grid lg:grid-cols-[1fr_1.5fr] gap-16 items-start mb-20">
+            <Reveal>
+              <h2 style={{ fontFamily: "'Instrument Serif', serif" }}
+                className="text-[38px] md:text-[52px] leading-[1.1] text-white mb-8">
+                Building together, across a continent.
+              </h2>
+              <p className="text-[16px] text-white/50 leading-[1.76] mb-6 max-w-[380px]">
+                No single actor can solve a continental challenge alone. Lucent Ag is building with farmers, businesses, governments, researchers and development partners — connecting every part of the food system into one intelligent, equitable network.
+              </p>
+              <div className="flex flex-col gap-3 mb-10">
+                {["Smallholder farmers & cooperatives", "Aggregators & processors", "Institutional buyers & exporters", "Development finance institutions", "Governments & policy makers"].map((actor, i) => (
+                  <div key={actor} className="flex items-center gap-3"
+                    style={{ opacity: 0, animation: `ilFadeUp 0.6s ease forwards ${300 + i * 80}ms` }}>
+                    <div className="w-1.5 h-1.5 rounded-full bg-[#C8922A] shrink-0" />
+                    <span className="text-[14px] text-white/60">{actor}</span>
+                  </div>
+                ))}
+              </div>
+              <DemoBtn className="text-[14px] px-7 py-4" />
+            </Reveal>
+
+            <Reveal delay={120} className="grid grid-cols-2 gap-3">
+              {[
+                { img: IMG.teamWork,    alt: "Team collaboration in the field", offset: "" },
+                { img: IMG.collab,      alt: "Partnership meeting across cultures", offset: "mt-8" },
+                { img: IMG.greenField,  alt: "Vast green agricultural landscape", offset: "-mt-4" },
+                { img: IMG.community,   alt: "Community gathering and connection", offset: "mt-4" },
+              ].map(({ img, alt, offset }) => (
+                <div key={img} className={`relative rounded-2xl overflow-hidden ${offset}`}>
+                  <img src={px(img, 420, 360)} alt={alt} className="w-full h-44 md:h-56 object-cover" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#0C1F14]/30 to-transparent" />
+                </div>
+              ))}
+            </Reveal>
+          </div>
+
+          {/* End-of-story CTA */}
+          <Reveal>
+            <div className="border-t border-white/10 pt-14 flex flex-col md:flex-row md:items-center justify-between gap-8">
+              <div>
+                <p className="text-[12px] text-white/30 tracking-[0.14em] uppercase mb-3"
+                  style={{ fontFamily: "'Geist Mono', monospace" }}>Continue the story with us</p>
+                <h3 style={{ fontFamily: "'Instrument Serif', serif" }}
+                  className="text-[28px] md:text-[36px] text-white leading-snug max-w-[460px]">
+                  Every actor in Africa's food system has a role to play. What is yours?
+                </h3>
+              </div>
+              <div className="shrink-0">
+                <DemoBtn className="text-[15px] px-8 py-4" />
+              </div>
+            </div>
+          </Reveal>
+        </div>
+      </section>
+    </div>
   );
 }
 
@@ -1549,8 +1831,8 @@ function AboutLeadership() {
           <Label>Leadership</Label>
           <Heading className="mt-4 max-w-[580px]">A team taking shape around a consequential mission.</Heading>
         </Reveal>
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-5 mb-14">
-          {Array.from({ length: 4 }).map((_, i) => (
+        {/* <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-5 mb-14">
+          {Array.from({ length: 6 }).map((_, i) => (
             <Reveal key={i} delay={i * 80} className="border border-border rounded-2xl p-8 flex flex-col items-center text-center gap-4 hover:border-[rgba(27,67,50,0.25)] hover:shadow-sm transition-all duration-200">
               <div className="w-16 h-16 rounded-full bg-[#EAE6DE] border border-border flex items-center justify-center">
                 <div className="w-8 h-8 rounded-full bg-[rgba(27,67,50,0.1)]" />
@@ -1564,7 +1846,69 @@ function AboutLeadership() {
               </div>
             </Reveal>
           ))}
+        </div> */}
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-5 mb-14">
+  {Array.from({ length: 6 }).map((_, i) => {
+    const leader = leaders[i];
+
+    if (leader) {
+      return (
+        <Reveal
+          key={leader.name + i}
+          delay={i * 80}
+          className="border border-border rounded-2xl p-8 flex flex-col items-center text-center gap-4 hover:border-[rgba(27,67,50,0.25)] hover:shadow-sm transition-all duration-200"
+        >
+          <div className="w-16 h-16 rounded-full overflow-hidden border border-border">
+            <img
+              src={leader.image}
+              alt={leader.name}
+              className="w-full h-full object-cover"
+            />
+          </div>
+          <div>
+            <div className="text-sm font-medium mb-1">{leader.name}</div>
+            <div className="text-xs text-[#6B7B6E]">{leader.role}</div>
+          </div>
+          <div
+            className="flex flex-wrap justify-center items-center gap-x-1.5 gap-y-1 text-[11px] text-[#6B7B6E]/70"
+            style={{ fontFamily: "'Geist Mono', monospace" }}
+          >
+            {leader.tags.map((tag, idx) => (
+              <span key={idx} className="flex items-center gap-1.5">
+                {idx > 0 && <span className="w-1 h-1 rounded-full bg-[#C8922A]/40" />}
+                {tag}
+              </span>
+            ))}
+          </div>
+        </Reveal>
+      );
+    }
+
+    // fallback placeholder for empty slots (unchanged from your version)
+    return (
+      <Reveal
+        key={i}
+        delay={i * 80}
+        className="border border-border rounded-2xl p-8 flex flex-col items-center text-center gap-4 hover:border-[rgba(27,67,50,0.25)] hover:shadow-sm transition-all duration-200"
+      >
+        <div className="w-16 h-16 rounded-full bg-[#EAE6DE] border border-border flex items-center justify-center">
+          <div className="w-8 h-8 rounded-full bg-[rgba(27,67,50,0.1)]" />
         </div>
+        <div>
+          <div className="w-24 h-3 bg-[#EAE6DE] rounded-full mb-2 mx-auto" />
+          <div className="w-16 h-2.5 bg-[#EAE6DE]/70 rounded-full mx-auto" />
+        </div>
+        <div
+          className="flex items-center gap-1.5 text-[11px] text-[#6B7B6E]/50"
+          style={{ fontFamily: "'Geist Mono', monospace" }}
+        >
+          <span className="w-1 h-1 rounded-full bg-[#C8922A]/40" />
+          Profile coming soon
+        </div>
+      </Reveal>
+    );
+  })}
+</div>
         <Reveal className="bg-[#F6F3EE] rounded-2xl p-10 md:p-14 flex flex-col md:flex-row items-start gap-8 border border-border">
           <div className="w-10 h-10 rounded-xl bg-[#1B4332] flex items-center justify-center shrink-0">
             <Users className="w-5 h-5 text-white" strokeWidth={1.5} />
@@ -1676,7 +2020,6 @@ function AboutPage() {
     </>
   );
 }
-
 // ═════════════════════════════════════════════════════════════════════════════
 // TEAM PAGE SECTIONS
 // ═════════════════════════════════════════════════════════════════════════════
@@ -1724,51 +2067,136 @@ function TeamHero({ navigate }: { navigate: (p: Page) => void }) {
 }
 
 function LeadershipPlaceholders() {
-  const ROLES = [
-    { title: "Chief Executive Officer", dept: "Leadership" },
-    { title: "Chief Operating Officer", dept: "Leadership" },
-    { title: "Chief Technology Officer", dept: "Engineering" },
-    { title: "Chief Agricultural Officer", dept: "Agri-Systems" },
-    { title: "Chief Data Officer", dept: "Data & AI" },
-    { title: "Head of Partnerships", dept: "Growth" },
-  ];
-  return (
-    <section className="bg-[#F6F3EE] py-28 md:py-36">
-      <div className="max-w-[1280px] mx-auto px-6 xl:px-10">
-        <Reveal className="mb-16">
-          <Label>Leadership</Label>
-          <Heading className="mt-4 max-w-[560px]">Building a world-class team around a consequential problem.</Heading>
-          <p className="text-[15px] text-[#6B7B6E] mt-5 max-w-[480px] leading-relaxed">We are assembling leaders with deep experience in agri-systems, technology, finance and impact. Profiles are published progressively as the team formalises.</p>
-        </Reveal>
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5 mb-12">
-          {ROLES.map((role, i) => (
-            <Reveal key={role.title} delay={i * 65}
-              className="bg-white border border-border rounded-2xl p-6 flex items-center gap-5 hover:border-[rgba(27,67,50,0.22)] hover:shadow-sm transition-all duration-200 group">
-              {/* Avatar ghost */}
-              <div className="w-14 h-14 rounded-full bg-[#EAE6DE] border border-border shrink-0 flex items-center justify-center group-hover:border-[rgba(27,67,50,0.2)] transition-colors">
-                <div className="w-7 h-7 rounded-full bg-[rgba(27,67,50,0.08)]" />
-              </div>
+  // const ROLES = [
+  //   { title: "Chief Executive Officer", dept: "",  },
+  //   { title: "Chief Operating Officer", dept: "",  },
+  //   { title: "Chief Technology Officer", dept: "Engineering" },
+  //   { title: "Chief Agricultural Officer", dept: "Agri-Systems" },
+  //   { title: "Chief Data Officer", dept: "Data & AI" },
+  //   { title: "Head of Partnerships", dept: "Growth" },
+  // ];
+  // return (
+  //   <section className="bg-[#F6F3EE] py-28 md:py-36">
+  //     <div className="max-w-[1280px] mx-auto px-6 xl:px-10">
+  //       <Reveal className="mb-16">
+  //         <Label>Leadership</Label>
+  //         <Heading className="mt-4 max-w-[560px]">Building a world-class team around a consequential problem.</Heading>
+  //         <p className="text-[15px] text-[#6B7B6E] mt-5 max-w-[480px] leading-relaxed">We are assembling leaders with deep experience in agri-systems, technology, finance and impact. Profiles are published progressively as the team formalises.</p>
+  //       </Reveal>
+  //       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5 mb-12">
+  //         {ROLES.map((role, i) => (
+  //           <Reveal key={role.title} delay={i * 65}
+  //             className="bg-white border border-border rounded-2xl p-6 flex items-center gap-5 hover:border-[rgba(27,67,50,0.22)] hover:shadow-sm transition-all duration-200 group">
+  //             {/* Avatar ghost */}
+  //             <div className="w-14 h-14 rounded-full bg-[#EAE6DE] border border-border shrink-0 flex items-center justify-center group-hover:border-[rgba(27,67,50,0.2)] transition-colors">
+  //               <div className="w-7 h-7 rounded-full bg-[rgba(27,67,50,0.08)]" />
+  //             </div>
+  //             <div className="flex-1 min-w-0">
+  //               <div className="w-20 h-2.5 bg-[#EAE6DE] rounded-full mb-2" />
+  //               <p className="text-[13px] font-semibold text-[#0C1F14] mb-1">{role.title}</p>
+  //               <span className="text-[10px] font-semibold text-[#C8922A] bg-[#C8922A]/10 px-2 py-0.5 rounded-full" style={{ fontFamily: "'Geist Mono', monospace" }}>{role.dept}</span>
+  //             </div>
+  //             <div className="shrink-0 text-[10px] text-[#6B7B6E]/45 text-right" style={{ fontFamily: "'Geist Mono', monospace" }}>Coming<br />soon</div>
+  //           </Reveal>
+  //         ))}
+  //       </div>
+  //       <Reveal className="bg-[#0C1F14] rounded-2xl p-8 md:p-12 flex flex-col md:flex-row items-center gap-8">
+  //         <div className="flex-1">
+  //           <h3 style={{ fontFamily: "'Instrument Serif', serif" }} className="text-[22px] md:text-[28px] text-white mb-3">Know someone who should be on this list?</h3>
+  //           <p className="text-[14px] text-white/50 leading-relaxed">We are actively seeking leaders in agri-technology, supply chain finance, AI and pan-African business development. Introductions are always welcome.</p>
+  //         </div>
+  //         <a href="#" className="shrink-0 inline-flex items-center gap-2 bg-[#C8922A] text-white text-[14px] font-medium px-6 py-3.5 rounded-full hover:bg-[#b07d22] transition-all">
+  //           Make an introduction <ArrowRight className="w-4 h-4" />
+  //         </a>
+  //       </Reveal>
+  //     </div>
+  //   </section>
+  // );
+
+  const TOTAL_SLOTS = 6; // keeps the grid at 6 cards even with fewer filled leaders
+
+return (
+  <section className="bg-[#F6F3EE] py-28 md:py-36">
+    <div className="max-w-[1280px] mx-auto px-6 xl:px-10">
+      <Reveal className="mb-16">
+        <Label>Leadership</Label>
+        <Heading className="mt-4 max-w-[560px]">Building a world-class team around a consequential problem.</Heading>
+        <p className="text-[15px] text-[#6B7B6E] mt-5 max-w-[480px] leading-relaxed">We are assembling leaders with deep experience in agri-systems, technology, finance and impact. Profiles are published progressively as the team formalises.</p>
+      </Reveal>
+
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5 mb-12">
+        {Array.from({ length: TOTAL_SLOTS }).map((_, i) => {
+          const leader = LEADERS[i];
+
+          return (
+            <Reveal
+              key={leader?.name ?? `slot-${i}`}
+              delay={i * 65}
+              className="bg-white border border-border rounded-2xl p-6 flex items-center gap-5 hover:border-[rgba(27,67,50,0.22)] hover:shadow-sm transition-all duration-200 group"
+            >
+              {leader?.image ? (
+                <img
+                  src={leader.image}
+                  alt={leader.name}
+                  className="w-14 h-14 rounded-full object-cover border border-border shrink-0"
+                />
+              ) : (
+                <div className="w-14 h-14 rounded-full bg-[#EAE6DE] border border-border shrink-0 flex items-center justify-center group-hover:border-[rgba(27,67,50,0.2)] transition-colors">
+                  <div className="w-7 h-7 rounded-full bg-[rgba(27,67,50,0.08)]" />
+                </div>
+              )}
+
               <div className="flex-1 min-w-0">
-                <div className="w-20 h-2.5 bg-[#EAE6DE] rounded-full mb-2" />
-                <p className="text-[13px] font-semibold text-[#0C1F14] mb-1">{role.title}</p>
-                <span className="text-[10px] font-semibold text-[#C8922A] bg-[#C8922A]/10 px-2 py-0.5 rounded-full" style={{ fontFamily: "'Geist Mono', monospace" }}>{role.dept}</span>
+                {/* {leader?.name ? (
+                  <p className="text-[13px] font-semibold text-[#0C1F14] mb-1">{leader.name}</p>
+                ) : (
+                  <div className="w-20 h-2.5 bg-[#EAE6DE] rounded-full mb-2" />
+                )} */}
+
+                <p className="text-[13px] font-semibold text-[#0C1F14] mb-1">
+                  {leader?.role ?? ""}
+                </p>
+
+                {leader ? (
+                  <div
+                    className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-[10px] text-[#6B7B6E]"
+                    style={{ fontFamily: "'Geist Mono', monospace" }}
+                  >
+                    {leader.tags.map((tag, idx) => (
+                      <span key={idx} className="flex items-center gap-1.5">
+                        {idx > 0 && <span className="w-1 h-1 rounded-full bg-[#C8922A]/50" />}
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                ) : null}
               </div>
-              <div className="shrink-0 text-[10px] text-[#6B7B6E]/45 text-right" style={{ fontFamily: "'Geist Mono', monospace" }}>Coming<br />soon</div>
+
+              {!leader && (
+                <div
+                  className="shrink-0 text-[10px] text-[#6B7B6E]/45 text-right"
+                  style={{ fontFamily: "'Geist Mono', monospace" }}
+                >
+                  Coming<br />soon
+                </div>
+              )}
             </Reveal>
-          ))}
-        </div>
-        <Reveal className="bg-[#0C1F14] rounded-2xl p-8 md:p-12 flex flex-col md:flex-row items-center gap-8">
-          <div className="flex-1">
-            <h3 style={{ fontFamily: "'Instrument Serif', serif" }} className="text-[22px] md:text-[28px] text-white mb-3">Know someone who should be on this list?</h3>
-            <p className="text-[14px] text-white/50 leading-relaxed">We are actively seeking leaders in agri-technology, supply chain finance, AI and pan-African business development. Introductions are always welcome.</p>
-          </div>
-          <a href="#" className="shrink-0 inline-flex items-center gap-2 bg-[#C8922A] text-white text-[14px] font-medium px-6 py-3.5 rounded-full hover:bg-[#b07d22] transition-all">
-            Make an introduction <ArrowRight className="w-4 h-4" />
-          </a>
-        </Reveal>
+          );
+        })}
       </div>
-    </section>
-  );
+
+      <Reveal className="bg-[#0C1F14] rounded-2xl p-8 md:p-12 flex flex-col md:flex-row items-center gap-8">
+        <div className="flex-1">
+          <h3 style={{ fontFamily: "'Instrument Serif', serif" }} className="text-[22px] md:text-[28px] text-white mb-3">Know someone who should be on this list?</h3>
+          <p className="text-[14px] text-white/50 leading-relaxed">We are actively seeking leaders in agri-technology, supply chain finance, AI and pan-African business development. Introductions are always welcome.</p>
+        </div>
+        <a href="#" className="shrink-0 inline-flex items-center gap-2 bg-[#C8922A] text-white text-[14px] font-medium px-6 py-3.5 rounded-full hover:bg-[#b07d22] transition-all">
+          Make an introduction <ArrowRight className="w-4 h-4" />
+        </a>
+      </Reveal>
+    </div>
+  </section>
+);
 }
 
 function CrossFunctionalExpertise() {
@@ -2081,9 +2509,9 @@ function TeamContactCTA() {
               </div>
               <div className="flex flex-col gap-3 shrink-0">
                 <DemoBtn className="text-[14px] px-8 py-4 justify-center" />
-                <a href="mailto:hello@lucentag.com"
+                <a href="mailto: dami@lucentag.com"
                   className="inline-flex items-center justify-center gap-2 border border-white/15 text-white text-[14px] font-medium px-8 py-4 rounded-full hover:bg-white/8 hover:border-white/28 transition-all">
-                  hello@lucentag.com
+                  dami@lucentag.com
                 </a>
               </div>
             </div>
@@ -2112,33 +2540,447 @@ function TeamPage({ navigate }: { navigate: (p: Page) => void }) {
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
+// ECOSYSTEM / SOLUTIONS / INTELLIGENCE / CAREERS PAGES
+// ═════════════════════════════════════════════════════════════════════════════
+
+function PageHero({ navigate, crumb, badge, title, subtitle, img }: {
+  navigate: (p: Page) => void; crumb: string; badge: string; title: string; subtitle: string; img: string;
+}) {
+  const { ref, inView } = useInView(0.05);
+  return (
+    <section className="relative min-h-[70vh] flex flex-col justify-end overflow-hidden bg-[#0C1F14]">
+      <GridBg />
+      <div className="absolute inset-0">
+        <img src={px(img, 1600, 900)} alt="" className="w-full h-full object-cover opacity-20" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0C1F14] via-[#0C1F14]/72 to-[#0C1F14]/35" />
+      </div>
+      <div ref={ref} className="relative z-10 max-w-[1280px] mx-auto px-6 xl:px-10 pt-32 pb-20"
+        style={{ opacity: inView ? 1 : 0, transform: inView ? "none" : "translateY(24px)", transition: "opacity 1s ease, transform 1s ease" }}>
+        <div className="flex items-center gap-2 mb-8">
+          <button onClick={() => navigate("home")} className="text-[11px] text-white/30 hover:text-white/60 transition-colors" style={{ fontFamily: "'Geist Mono', monospace" }}>Lucent Ag</button>
+          <span className="text-[11px] text-white/20">/</span>
+          <span className="text-[11px] text-[#C8922A]" style={{ fontFamily: "'Geist Mono', monospace" }}>{crumb}</span>
+        </div>
+        <div className="inline-flex items-center gap-2 border border-[rgba(200,146,42,0.28)] rounded-full px-4 py-1.5 mb-7">
+          <span className="w-1.5 h-1.5 rounded-full bg-[#C8922A]" />
+          <span className="text-[11px] font-medium text-[#C8922A] tracking-wide" style={{ fontFamily: "'Geist Mono', monospace" }}>{badge}</span>
+        </div>
+        <h1 style={{ fontFamily: "'Instrument Serif', serif" }}
+          className="text-[44px] sm:text-[58px] lg:text-[72px] leading-[1.0] tracking-[-0.02em] text-white max-w-[820px] mb-6">
+          {title}
+        </h1>
+        <p className="text-[16px] md:text-[18px] text-white/50 leading-[1.68] max-w-[540px]">{subtitle}</p>
+      </div>
+    </section>
+  );
+}
+
+function EcosystemPage({ navigate }: { navigate: (p: Page) => void }) {
+  return (
+    <>
+      <PageHero navigate={navigate} crumb="Ecosystem" badge="The network"
+        title="Every actor in Africa's food system, on one connected network."
+        subtitle="From smallholder farms to financial institutions, Lucent Ag links every participant in the value chain into a single, verified network."
+        img={IMG.aerialCrops} />
+      <EcosystemSection />
+      <WhoWeWorkWithSection />
+      <TeamContactCTA />
+    </>
+  );
+}
+
+const SOLUTIONS_ROLES = ["farmers", "aggregators", "processors", "buyers", "finance"]
+  .map(id => IL_NODES.find(n => n.id === id)!);
+
+function SolutionsSection() {
+  return (
+    <section className="py-28 md:py-36 bg-[#F6F3EE]">
+      <div className="max-w-[1280px] mx-auto px-6 xl:px-10">
+        <Reveal className="text-center mb-16">
+          <Label>Solutions by role</Label>
+          <Heading className="mt-4 max-w-[640px] mx-auto">Purpose-built value for every participant.</Heading>
+        </Reveal>
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {SOLUTIONS_ROLES.map((n, i) => (
+            <Reveal key={n.id} delay={i * 80} className="bg-white rounded-2xl border border-border p-8 flex flex-col gap-5 hover:border-[rgba(27,67,50,0.22)] hover:shadow-[0_8px_28px_rgba(27,67,50,0.1)] transition-all duration-200">
+              <div className="w-11 h-11 rounded-xl bg-[#1B4332]/8 flex items-center justify-center">
+                <n.Icon className="w-5 h-5 text-[#1B4332]" strokeWidth={1.5} />
+              </div>
+              <div>
+                <h3 style={{ fontFamily: "'Instrument Serif', serif" }} className="text-[20px] text-[#0C1F14] mb-2">For {n.label} {n.sub}</h3>
+                <p className="text-[14px] text-[#6B7B6E] leading-relaxed">{n.details[0]}</p>
+              </div>
+              <DemoBtn className="text-[13px] px-4 py-2 mt-auto self-start" />
+            </Reveal>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function SolutionsPage({ navigate }: { navigate: (p: Page) => void }) {
+  return (
+    <>
+      <PageHero navigate={navigate} crumb="Solutions" badge="Built for every role"
+        title="Solutions designed around how you actually work."
+        subtitle="Whether you grow, aggregate, process, buy or finance — Lucent Ag gives you the tools built for your role in the food system."
+        img={IMG.market} />
+      <SolutionsSection />
+      <TeamContactCTA />
+    </>
+  );
+}
+
+function IntelligencePage({ navigate }: { navigate: (p: Page) => void }) {
+  return (
+    <>
+      <PageHero navigate={navigate} crumb="Intelligence" badge="Data & research"
+        title="The intelligence layer behind every decision on the network."
+        subtitle="Satellite imagery, IoT sensors and market signals — fused with curated research from the organisations shaping Africa's food future."
+        img={IMG.satellite} />
+      <IntelligenceSection />
+      <TeamContactCTA />
+    </>
+  );
+}
+
+function CareersPage({ navigate }: { navigate: (p: Page) => void }) {
+  return (
+    <>
+      <PageHero navigate={navigate} crumb="Careers" badge="Join the team"
+        title="Help build the operating system for Africa's post-harvest economy."
+        subtitle="We're a small, focused team solving one of the continent's most consequential infrastructure problems. Here's where we're hiring."
+        img={IMG.teamWork} />
+      <AboutCareersPreview />
+      <TeamContactCTA />
+    </>
+  );
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// REQUEST A DEMO MODAL
+// ═════════════════════════════════════════════════════════════════════════════
+function ModalBackdrop({ children, onClose }: { children: React.ReactNode; onClose: () => void }) {
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", onKey);
+    return () => { document.body.style.overflow = ""; window.removeEventListener("keydown", onKey); };
+  }, [onClose]);
+
+  return (
+    <div className="fixed inset-0 z-[9000] flex items-end md:items-center justify-center p-0 md:p-6"
+      onClick={onClose}
+      style={{ backgroundColor: "rgba(12,31,20,0.72)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)" }}>
+      <div onClick={e => e.stopPropagation()} className="w-full md:w-auto">
+        {children}
+      </div>
+    </div>
+  );
+}
+
+const ROLES = ["Farmer / Cooperative", "Aggregator / Processor", "Buyer / Exporter", "Financer / Investor", "Government / Policy", "Researcher / NGO", "Press / Media", "Other"];
+
+const LUCENT_AG_EMAIL = "dami@lucentag.com";
+
+function buildMailtoLink(to: string, subject: string, fields: Record<string, string>) {
+  const body = Object.entries(fields)
+    .filter(([, v]) => v && v.trim() !== "")
+    .map(([label, v]) => `${label}: ${v}`)
+    .join("\n");
+  return `mailto:${to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+}
+
+function DemoModal({ onClose }: { onClose: () => void }) {
+  const [step, setStep] = useState<"form" | "success">("form");
+  const [form, setForm] = useState({ firstName: "", lastName: "", email: "", org: "", role: "", country: "", message: "" });
+  const [submitting, setSubmitting] = useState(false);
+
+  const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
+    setForm(f => ({ ...f, [k]: e.target.value }));
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitting(true);
+    const demoRequest = {
+      "First name": form.firstName,
+      "Last name": form.lastName,
+      "Email": form.email,
+      "Organisation": form.org,
+      "Country": form.country,
+      "Role": form.role,
+      "What they'd like to explore": form.message,
+    };
+    const mailto = buildMailtoLink(LUCENT_AG_EMAIL, `Demo request — ${form.org || `${form.firstName} ${form.lastName}`.trim()}`, demoRequest);
+    setTimeout(() => {
+      window.location.href = mailto;
+      setSubmitting(false);
+      setStep("success");
+    }, 1400);
+  };
+
+  const inputCls = "w-full bg-[#F6F3EE] border border-[rgba(27,67,50,0.15)] rounded-xl px-4 py-3 text-[14px] text-[#0C1F14] placeholder:text-[#6B7B6E]/50 outline-none focus:border-[#1B4332] focus:ring-1 focus:ring-[#1B4332]/20 transition-all";
+
+  return (
+    <ModalBackdrop onClose={onClose}>
+      <div className="w-full md:w-[600px] max-h-[95vh] md:max-h-[90vh] bg-white md:rounded-3xl overflow-hidden flex flex-col shadow-[0_32px_96px_rgba(12,31,20,0.28)]">
+        {step === "form" ? (
+          <>
+            <div className="bg-[#0C1F14] px-8 py-7 flex items-start justify-between shrink-0">
+              <div>
+                <Label>Request a Demo</Label>
+                <h2 style={{ fontFamily: "'Instrument Serif', serif" }} className="text-[26px] text-white mt-1 leading-tight">
+                  See Lucent Ag in action.
+                </h2>
+                <p className="text-[13px] text-white/40 mt-1 max-w-[340px]">Tell us a little about yourself and we will be in touch within one business day.</p>
+              </div>
+              <button onClick={onClose} className="mt-0.5 text-white/30 hover:text-white transition-colors shrink-0 ml-6">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmit} className="overflow-y-auto flex-1 px-8 py-7 flex flex-col gap-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[11px] font-semibold text-[#6B7B6E] uppercase tracking-wider mb-1.5 block" style={{ fontFamily: "'Geist Mono', monospace" }}>First name *</label>
+                  <input required value={form.firstName} onChange={set("firstName")} placeholder="Amara" className={inputCls} />
+                </div>
+                <div>
+                  <label className="text-[11px] font-semibold text-[#6B7B6E] uppercase tracking-wider mb-1.5 block" style={{ fontFamily: "'Geist Mono', monospace" }}>Last name *</label>
+                  <input required value={form.lastName} onChange={set("lastName")} placeholder="Okonkwo" className={inputCls} />
+                </div>
+              </div>
+              <div>
+                <label className="text-[11px] font-semibold text-[#6B7B6E] uppercase tracking-wider mb-1.5 block" style={{ fontFamily: "'Geist Mono', monospace" }}>Email address *</label>
+                <input required type="email" value={form.email} onChange={set("email")} placeholder="amara@company.com" className={inputCls} />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[11px] font-semibold text-[#6B7B6E] uppercase tracking-wider mb-1.5 block" style={{ fontFamily: "'Geist Mono', monospace" }}>Organisation *</label>
+                  <input required value={form.org} onChange={set("org")} placeholder="Company name" className={inputCls} />
+                </div>
+                <div>
+                  <label className="text-[11px] font-semibold text-[#6B7B6E] uppercase tracking-wider mb-1.5 block" style={{ fontFamily: "'Geist Mono', monospace" }}>Country</label>
+                  <input value={form.country} onChange={set("country")} placeholder="Nigeria" className={inputCls} />
+                </div>
+              </div>
+              <div>
+                <label className="text-[11px] font-semibold text-[#6B7B6E] uppercase tracking-wider mb-1.5 block" style={{ fontFamily: "'Geist Mono', monospace" }}>Your role *</label>
+                <select required value={form.role} onChange={set("role")}
+                  className={`${inputCls} appearance-none cursor-pointer`}>
+                  <option value="">Select your role</option>
+                  {ROLES.map(r => <option key={r} value={r}>{r}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="text-[11px] font-semibold text-[#6B7B6E] uppercase tracking-wider mb-1.5 block" style={{ fontFamily: "'Geist Mono', monospace" }}>What would you like to explore? (optional)</label>
+                <textarea value={form.message} onChange={set("message")} rows={3}
+                  placeholder="Tell us about your use case or the challenge you are working to solve..."
+                  className={`${inputCls} resize-none`} />
+              </div>
+              <div className="pt-2">
+                <button type="submit" disabled={submitting}
+                  className="w-full flex items-center justify-center gap-2 bg-[#C8922A] text-white font-medium rounded-xl py-3.5 text-[14px] hover:bg-[#b07d22] transition-all disabled:opacity-60">
+                  {submitting ? (
+                    <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />Processing…</>
+                  ) : (
+                    <>Request your demo <ArrowRight className="w-4 h-4" /></>
+                  )}
+                </button>
+                <p className="text-[11px] text-center text-[#6B7B6E]/50 mt-3">We respect your privacy. No spam, ever.</p>
+              </div>
+            </form>
+          </>
+        ) : (
+          <div className="flex flex-col items-center justify-center text-center px-10 py-16 min-h-[440px]">
+            <div className="w-16 h-16 rounded-full bg-[#1B4332] flex items-center justify-center mb-7 shadow-[0_8px_32px_rgba(27,67,50,0.28)]">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            </div>
+            <h2 style={{ fontFamily: "'Instrument Serif', serif" }} className="text-[32px] text-[#0C1F14] mb-4 leading-tight">
+              You're on the list.
+            </h2>
+            <p className="text-[15px] text-[#6B7B6E] leading-relaxed max-w-[320px] mb-8">
+              Thank you, {form.firstName}. Someone from our team will reach out within one business day. We look forward to showing you what Lucent Ag can do.
+            </p>
+            <button onClick={onClose}
+              className="inline-flex items-center gap-2 bg-[#0C1F14] text-white text-[13px] font-medium px-6 py-3 rounded-full hover:bg-[#1B4332] transition-colors">
+              Back to site <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        )}
+      </div>
+    </ModalBackdrop>
+  );
+}
+
+function ContactModal({ onClose }: { onClose: () => void }) {
+  const [step, setStep] = useState<"form" | "success">("form");
+  const [form, setForm] = useState({ firstName: "", lastName: "", email: "", org: "", role: "", country: "", message: "" });
+  const [submitting, setSubmitting] = useState(false);
+
+  const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
+    setForm(f => ({ ...f, [k]: e.target.value }));
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitting(true);
+    const contactRequest = {
+      "First name": form.firstName,
+      "Last name": form.lastName,
+      "Email": form.email,
+      "Organisation": form.org,
+      "Country": form.country,
+      "Role": form.role,
+      "Message": form.message,
+    };
+    const mailto = buildMailtoLink(LUCENT_AG_EMAIL, `Contact request — ${form.org || `${form.firstName} ${form.lastName}`.trim()}`, contactRequest);
+    setTimeout(() => {
+      window.location.href = mailto;
+      setSubmitting(false);
+      setStep("success");
+    }, 1400);
+  };
+
+  const inputCls = "w-full bg-[#F6F3EE] border border-[rgba(27,67,50,0.15)] rounded-xl px-4 py-3 text-[14px] text-[#0C1F14] placeholder:text-[#6B7B6E]/50 outline-none focus:border-[#1B4332] focus:ring-1 focus:ring-[#1B4332]/20 transition-all";
+
+  return (
+    <ModalBackdrop onClose={onClose}>
+      <div className="w-full md:w-[600px] max-h-[95vh] md:max-h-[90vh] bg-white md:rounded-3xl overflow-hidden flex flex-col shadow-[0_32px_96px_rgba(12,31,20,0.28)]">
+        {step === "form" ? (
+          <>
+            <div className="bg-[#0C1F14] px-8 py-7 flex items-start justify-between shrink-0">
+              <div>
+                <Label>Contact our team</Label>
+                <h2 style={{ fontFamily: "'Instrument Serif', serif" }} className="text-[26px] text-white mt-1 leading-tight">
+                  Let's start a conversation.
+                </h2>
+                <p className="text-[13px] text-white/40 mt-1 max-w-[340px]">Tell us a little about yourself and what's on your mind — we will be in touch within one business day.</p>
+              </div>
+              <button onClick={onClose} className="mt-0.5 text-white/30 hover:text-white transition-colors shrink-0 ml-6">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmit} className="overflow-y-auto flex-1 px-8 py-7 flex flex-col gap-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[11px] font-semibold text-[#6B7B6E] uppercase tracking-wider mb-1.5 block" style={{ fontFamily: "'Geist Mono', monospace" }}>First name *</label>
+                  <input required value={form.firstName} onChange={set("firstName")} placeholder="Amara" className={inputCls} />
+                </div>
+                <div>
+                  <label className="text-[11px] font-semibold text-[#6B7B6E] uppercase tracking-wider mb-1.5 block" style={{ fontFamily: "'Geist Mono', monospace" }}>Last name *</label>
+                  <input required value={form.lastName} onChange={set("lastName")} placeholder="Okonkwo" className={inputCls} />
+                </div>
+              </div>
+              <div>
+                <label className="text-[11px] font-semibold text-[#6B7B6E] uppercase tracking-wider mb-1.5 block" style={{ fontFamily: "'Geist Mono', monospace" }}>Email address *</label>
+                <input required type="email" value={form.email} onChange={set("email")} placeholder="amara@company.com" className={inputCls} />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[11px] font-semibold text-[#6B7B6E] uppercase tracking-wider mb-1.5 block" style={{ fontFamily: "'Geist Mono', monospace" }}>Organisation *</label>
+                  <input required value={form.org} onChange={set("org")} placeholder="Company name" className={inputCls} />
+                </div>
+                <div>
+                  <label className="text-[11px] font-semibold text-[#6B7B6E] uppercase tracking-wider mb-1.5 block" style={{ fontFamily: "'Geist Mono', monospace" }}>Country</label>
+                  <input value={form.country} onChange={set("country")} placeholder="Nigeria" className={inputCls} />
+                </div>
+              </div>
+              <div>
+                <label className="text-[11px] font-semibold text-[#6B7B6E] uppercase tracking-wider mb-1.5 block" style={{ fontFamily: "'Geist Mono', monospace" }}>Your role *</label>
+                <select required value={form.role} onChange={set("role")}
+                  className={`${inputCls} appearance-none cursor-pointer`}>
+                  <option value="">Select your role</option>
+                  {ROLES.map(r => <option key={r} value={r}>{r}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="text-[11px] font-semibold text-[#6B7B6E] uppercase tracking-wider mb-1.5 block" style={{ fontFamily: "'Geist Mono', monospace" }}>How can we help? *</label>
+                <textarea required value={form.message} onChange={set("message")} rows={3}
+                  placeholder="Tell us what's on your mind — a question, a partnership idea, press enquiry..."
+                  className={`${inputCls} resize-none`} />
+              </div>
+              <div className="pt-2">
+                <button type="submit" disabled={submitting}
+                  className="w-full flex items-center justify-center gap-2 bg-[#C8922A] text-white font-medium rounded-xl py-3.5 text-[14px] hover:bg-[#b07d22] transition-all disabled:opacity-60">
+                  {submitting ? (
+                    <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />Processing…</>
+                  ) : (
+                    <>Send message <ArrowRight className="w-4 h-4" /></>
+                  )}
+                </button>
+                <p className="text-[11px] text-center text-[#6B7B6E]/50 mt-3">We respect your privacy. No spam, ever.</p>
+              </div>
+            </form>
+          </>
+        ) : (
+          <div className="flex flex-col items-center justify-center text-center px-10 py-16 min-h-[440px]">
+            <div className="w-16 h-16 rounded-full bg-[#1B4332] flex items-center justify-center mb-7 shadow-[0_8px_32px_rgba(27,67,50,0.28)]">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            </div>
+            <h2 style={{ fontFamily: "'Instrument Serif', serif" }} className="text-[32px] text-[#0C1F14] mb-4 leading-tight">
+              Message sent.
+            </h2>
+            <p className="text-[15px] text-[#6B7B6E] leading-relaxed max-w-[320px] mb-8">
+              Thank you, {form.firstName}. Someone from our team will get back to you within one business day.
+            </p>
+            <button onClick={onClose}
+              className="inline-flex items-center gap-2 bg-[#0C1F14] text-white text-[13px] font-medium px-6 py-3 rounded-full hover:bg-[#1B4332] transition-colors">
+              Back to site <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        )}
+      </div>
+    </ModalBackdrop>
+  );
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
 // Root
 // ═════════════════════════════════════════════════════════════════════════════
 export default function App() {
   const [page, setPage] = useState<Page>("home");
+  const [modal, setModal] = useState<ModalType>(null);
 
   const navigate = (target: Page) => {
     setPage(target);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  const openModal = useCallback((m: ModalType) => setModal(m), []);
+  const closeModal = useCallback(() => setModal(null), []);
+
   return (
-    <div className="bg-[#F6F3EE] text-[#0C1F14] overflow-x-hidden" style={{ fontFamily: "'Geist', sans-serif" }}>
-      <style>{`
-        @keyframes ilFadeUp { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
-        @keyframes ilSpin   { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
-        @keyframes ilOrbit  { 0%,100%{stroke-opacity:.06} 50%{stroke-opacity:.18} }
-        ::-webkit-scrollbar { display:none; }
-        * { scrollbar-width:none; }
-      `}</style>
+    <ModalCtx.Provider value={{ open: openModal, close: closeModal }}>
+      <div className="bg-[#F6F3EE] text-[#0C1F14] overflow-x-hidden" style={{ fontFamily: "'Geist', sans-serif" }}>
+        <style>{`
+          @keyframes ilFadeUp { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+          @keyframes ilSpin   { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+          @keyframes ilOrbit  { 0%,100%{stroke-opacity:.06} 50%{stroke-opacity:.18} }
+          ::-webkit-scrollbar { display:none; }
+          * { scrollbar-width:none; }
+        `}</style>
 
-      <GlobalNav page={page} navigate={navigate} />
+        <GlobalNav page={page} navigate={navigate} />
 
-      {page === "home"  && <HomePage />}
-      {page === "about" && <AboutPage />}
-      {page === "team"  && <TeamPage navigate={navigate} />}
+        {page === "home"         && <HomePage />}
+        {page === "about"        && <AboutPage />}
+        {page === "team"         && <TeamPage navigate={navigate} />}
+        {page === "ecosystem"    && <EcosystemPage navigate={navigate} />}
+        {page === "solutions"    && <SolutionsPage navigate={navigate} />}
+        {page === "intelligence" && <IntelligencePage navigate={navigate} />}
+        {page === "careers"      && <CareersPage navigate={navigate} />}
 
-      <SiteFooter navigate={navigate} />
-    </div>
+        <SiteFooter navigate={navigate} />
+
+        {modal === "demo" && <DemoModal onClose={closeModal} />}
+        {modal === "contact" && <ContactModal onClose={closeModal} />}
+      </div>
+    </ModalCtx.Provider>
   );
 }
