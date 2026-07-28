@@ -18,7 +18,7 @@ import leaderAdvisor2 from "@/assets/Advisor2.png";
 // Types & Routing
 // ─────────────────────────────────────────────────────────────────────────────
 type Page = "home" | "about" | "team" | "ecosystem" | "solutions" | "intelligence" | "careers";
-type ModalType = "demo" | null;
+type ModalType = "demo" | "contact" | null;
 
 interface Leader {
   name: string;
@@ -1345,6 +1345,7 @@ function PartnersSection() {
 }
 
 function HomeCTASection() {
+  const { open } = useModal();
   return (
     <section className="py-20 md:py-24 px-6 xl:px-10">
       <div className="max-w-[1280px] mx-auto">
@@ -1368,7 +1369,7 @@ function HomeCTASection() {
               </div>
               <div className="flex flex-col gap-3 shrink-0">
                 <DemoBtn className="text-[14px] px-8 py-4 justify-center" />
-                <a href="#" className="inline-flex items-center justify-center gap-2 border border-white/15 text-white text-[14px] font-medium px-8 py-4 rounded-full hover:bg-white/8 hover:border-white/28 transition-all">Contact our team</a>
+                <button onClick={() => open("contact")} className="inline-flex items-center justify-center gap-2 border border-white/15 text-white text-[14px] font-medium px-8 py-4 rounded-full hover:bg-white/8 hover:border-white/28 transition-all">Contact our team</button>
               </div>
             </div>
           </div>
@@ -1432,7 +1433,7 @@ function AboutHero() {
           Founded on a simple conviction: the barriers between Africa's harvests and its markets are problems of connectivity, visibility and trust — and they are solvable.
         </p>
         <div className="flex flex-wrap gap-3 mt-10">
-          {["Est. 2023", "African-built", "Global ambition", "6 active markets"].map(b => (
+          {["Est. 2023", "African-built", "Global ambition", "0 active markets"].map(b => (
             <div key={b} className="flex items-center gap-1.5 border border-white/12 rounded-full px-3.5 py-1.5">
               <span className="w-1 h-1 rounded-full bg-[#C8922A]" />
               <span className="text-[11.5px] text-white/50" style={{ fontFamily: "'Geist Mono', monospace" }}>{b}</span>
@@ -2508,9 +2509,9 @@ function TeamContactCTA() {
               </div>
               <div className="flex flex-col gap-3 shrink-0">
                 <DemoBtn className="text-[14px] px-8 py-4 justify-center" />
-                <a href="mailto:hello@lucentag.com"
+                <a href="mailto: dami@lucentag.com"
                   className="inline-flex items-center justify-center gap-2 border border-white/15 text-white text-[14px] font-medium px-8 py-4 rounded-full hover:bg-white/8 hover:border-white/28 transition-all">
-                  hello@lucentag.com
+                  dami@lucentag.com
                 </a>
               </div>
             </div>
@@ -2681,6 +2682,16 @@ function ModalBackdrop({ children, onClose }: { children: React.ReactNode; onClo
 
 const ROLES = ["Farmer / Cooperative", "Aggregator / Processor", "Buyer / Exporter", "Financer / Investor", "Government / Policy", "Researcher / NGO", "Press / Media", "Other"];
 
+const LUCENT_AG_EMAIL = "dami@lucentag.com";
+
+function buildMailtoLink(to: string, subject: string, fields: Record<string, string>) {
+  const body = Object.entries(fields)
+    .filter(([, v]) => v && v.trim() !== "")
+    .map(([label, v]) => `${label}: ${v}`)
+    .join("\n");
+  return `mailto:${to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+}
+
 function DemoModal({ onClose }: { onClose: () => void }) {
   const [step, setStep] = useState<"form" | "success">("form");
   const [form, setForm] = useState({ firstName: "", lastName: "", email: "", org: "", role: "", country: "", message: "" });
@@ -2692,7 +2703,21 @@ function DemoModal({ onClose }: { onClose: () => void }) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
-    setTimeout(() => { setSubmitting(false); setStep("success"); }, 1400);
+    const demoRequest = {
+      "First name": form.firstName,
+      "Last name": form.lastName,
+      "Email": form.email,
+      "Organisation": form.org,
+      "Country": form.country,
+      "Role": form.role,
+      "What they'd like to explore": form.message,
+    };
+    const mailto = buildMailtoLink(LUCENT_AG_EMAIL, `Demo request — ${form.org || `${form.firstName} ${form.lastName}`.trim()}`, demoRequest);
+    setTimeout(() => {
+      window.location.href = mailto;
+      setSubmitting(false);
+      setStep("success");
+    }, 1400);
   };
 
   const inputCls = "w-full bg-[#F6F3EE] border border-[rgba(27,67,50,0.15)] rounded-xl px-4 py-3 text-[14px] text-[#0C1F14] placeholder:text-[#6B7B6E]/50 outline-none focus:border-[#1B4332] focus:ring-1 focus:ring-[#1B4332]/20 transition-all";
@@ -2791,6 +2816,130 @@ function DemoModal({ onClose }: { onClose: () => void }) {
   );
 }
 
+function ContactModal({ onClose }: { onClose: () => void }) {
+  const [step, setStep] = useState<"form" | "success">("form");
+  const [form, setForm] = useState({ firstName: "", lastName: "", email: "", org: "", role: "", country: "", message: "" });
+  const [submitting, setSubmitting] = useState(false);
+
+  const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
+    setForm(f => ({ ...f, [k]: e.target.value }));
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitting(true);
+    const contactRequest = {
+      "First name": form.firstName,
+      "Last name": form.lastName,
+      "Email": form.email,
+      "Organisation": form.org,
+      "Country": form.country,
+      "Role": form.role,
+      "Message": form.message,
+    };
+    const mailto = buildMailtoLink(LUCENT_AG_EMAIL, `Contact request — ${form.org || `${form.firstName} ${form.lastName}`.trim()}`, contactRequest);
+    setTimeout(() => {
+      window.location.href = mailto;
+      setSubmitting(false);
+      setStep("success");
+    }, 1400);
+  };
+
+  const inputCls = "w-full bg-[#F6F3EE] border border-[rgba(27,67,50,0.15)] rounded-xl px-4 py-3 text-[14px] text-[#0C1F14] placeholder:text-[#6B7B6E]/50 outline-none focus:border-[#1B4332] focus:ring-1 focus:ring-[#1B4332]/20 transition-all";
+
+  return (
+    <ModalBackdrop onClose={onClose}>
+      <div className="w-full md:w-[600px] max-h-[95vh] md:max-h-[90vh] bg-white md:rounded-3xl overflow-hidden flex flex-col shadow-[0_32px_96px_rgba(12,31,20,0.28)]">
+        {step === "form" ? (
+          <>
+            <div className="bg-[#0C1F14] px-8 py-7 flex items-start justify-between shrink-0">
+              <div>
+                <Label>Contact our team</Label>
+                <h2 style={{ fontFamily: "'Instrument Serif', serif" }} className="text-[26px] text-white mt-1 leading-tight">
+                  Let's start a conversation.
+                </h2>
+                <p className="text-[13px] text-white/40 mt-1 max-w-[340px]">Tell us a little about yourself and what's on your mind — we will be in touch within one business day.</p>
+              </div>
+              <button onClick={onClose} className="mt-0.5 text-white/30 hover:text-white transition-colors shrink-0 ml-6">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmit} className="overflow-y-auto flex-1 px-8 py-7 flex flex-col gap-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[11px] font-semibold text-[#6B7B6E] uppercase tracking-wider mb-1.5 block" style={{ fontFamily: "'Geist Mono', monospace" }}>First name *</label>
+                  <input required value={form.firstName} onChange={set("firstName")} placeholder="Amara" className={inputCls} />
+                </div>
+                <div>
+                  <label className="text-[11px] font-semibold text-[#6B7B6E] uppercase tracking-wider mb-1.5 block" style={{ fontFamily: "'Geist Mono', monospace" }}>Last name *</label>
+                  <input required value={form.lastName} onChange={set("lastName")} placeholder="Okonkwo" className={inputCls} />
+                </div>
+              </div>
+              <div>
+                <label className="text-[11px] font-semibold text-[#6B7B6E] uppercase tracking-wider mb-1.5 block" style={{ fontFamily: "'Geist Mono', monospace" }}>Email address *</label>
+                <input required type="email" value={form.email} onChange={set("email")} placeholder="amara@company.com" className={inputCls} />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[11px] font-semibold text-[#6B7B6E] uppercase tracking-wider mb-1.5 block" style={{ fontFamily: "'Geist Mono', monospace" }}>Organisation *</label>
+                  <input required value={form.org} onChange={set("org")} placeholder="Company name" className={inputCls} />
+                </div>
+                <div>
+                  <label className="text-[11px] font-semibold text-[#6B7B6E] uppercase tracking-wider mb-1.5 block" style={{ fontFamily: "'Geist Mono', monospace" }}>Country</label>
+                  <input value={form.country} onChange={set("country")} placeholder="Nigeria" className={inputCls} />
+                </div>
+              </div>
+              <div>
+                <label className="text-[11px] font-semibold text-[#6B7B6E] uppercase tracking-wider mb-1.5 block" style={{ fontFamily: "'Geist Mono', monospace" }}>Your role *</label>
+                <select required value={form.role} onChange={set("role")}
+                  className={`${inputCls} appearance-none cursor-pointer`}>
+                  <option value="">Select your role</option>
+                  {ROLES.map(r => <option key={r} value={r}>{r}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="text-[11px] font-semibold text-[#6B7B6E] uppercase tracking-wider mb-1.5 block" style={{ fontFamily: "'Geist Mono', monospace" }}>How can we help? *</label>
+                <textarea required value={form.message} onChange={set("message")} rows={3}
+                  placeholder="Tell us what's on your mind — a question, a partnership idea, press enquiry..."
+                  className={`${inputCls} resize-none`} />
+              </div>
+              <div className="pt-2">
+                <button type="submit" disabled={submitting}
+                  className="w-full flex items-center justify-center gap-2 bg-[#C8922A] text-white font-medium rounded-xl py-3.5 text-[14px] hover:bg-[#b07d22] transition-all disabled:opacity-60">
+                  {submitting ? (
+                    <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />Processing…</>
+                  ) : (
+                    <>Send message <ArrowRight className="w-4 h-4" /></>
+                  )}
+                </button>
+                <p className="text-[11px] text-center text-[#6B7B6E]/50 mt-3">We respect your privacy. No spam, ever.</p>
+              </div>
+            </form>
+          </>
+        ) : (
+          <div className="flex flex-col items-center justify-center text-center px-10 py-16 min-h-[440px]">
+            <div className="w-16 h-16 rounded-full bg-[#1B4332] flex items-center justify-center mb-7 shadow-[0_8px_32px_rgba(27,67,50,0.28)]">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            </div>
+            <h2 style={{ fontFamily: "'Instrument Serif', serif" }} className="text-[32px] text-[#0C1F14] mb-4 leading-tight">
+              Message sent.
+            </h2>
+            <p className="text-[15px] text-[#6B7B6E] leading-relaxed max-w-[320px] mb-8">
+              Thank you, {form.firstName}. Someone from our team will get back to you within one business day.
+            </p>
+            <button onClick={onClose}
+              className="inline-flex items-center gap-2 bg-[#0C1F14] text-white text-[13px] font-medium px-6 py-3 rounded-full hover:bg-[#1B4332] transition-colors">
+              Back to site <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        )}
+      </div>
+    </ModalBackdrop>
+  );
+}
+
 // ═════════════════════════════════════════════════════════════════════════════
 // Root
 // ═════════════════════════════════════════════════════════════════════════════
@@ -2830,6 +2979,7 @@ export default function App() {
         <SiteFooter navigate={navigate} />
 
         {modal === "demo" && <DemoModal onClose={closeModal} />}
+        {modal === "contact" && <ContactModal onClose={closeModal} />}
       </div>
     </ModalCtx.Provider>
   );
