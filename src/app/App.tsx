@@ -10,9 +10,9 @@ import {
 } from "lucide-react";
 import lucentImage from "@/imports/image.png";
 import lucentLogo from "@/assets/Lucent Ag Logo new.png";
-import leaderAdvisor1 from "@/assets/Advisor.png";
+import leaderAdvisor1 from "@/assets/Advisor2.png";
 import leaderFounderCEO from "@/assets/CEO.png";
-import leaderAdvisor2 from "@/assets/Advisor2.png";
+import leaderAdvisor2 from "@/assets/Advisor.png";
  
 // ─────────────────────────────────────────────────────────────────────────────
 // Types & Routing
@@ -30,6 +30,16 @@ interface Leader {
 const leaders: Leader[] = [
   {
     name: "Name",
+    role: "Founder/CEO",
+    tags: [
+      "Systems Builder",
+      "Product Leader",
+      "MSc, Information & Automation Engineering",
+    ],
+    image: leaderFounderCEO,
+  },
+  {
+    name: "Name",
     role: "Advisor",
     tags: [
       "Principal at VC",
@@ -38,16 +48,6 @@ const leaders: Leader[] = [
       "MBA, University of Chicago (Chicago Booth)",
     ],
     image: leaderAdvisor1,
-  },
-  {
-    name: "Name",
-    role: "Founder/CEO",
-    tags: [
-      "Systems Builder",
-      "Product Leader",
-      "MSc, Information & Automation Engineering",
-    ],
-    image: leaderFounderCEO,
   },
   {
     name: "Name",
@@ -65,6 +65,16 @@ const leaders: Leader[] = [
 const LEADERS: Leader[] = [
   {
     name: "Name",
+    role: "Founder/CEO",
+    tags: [
+      "Systems Builder",
+      "Product Leader",
+      "MSc, Information & Automation Engineering",
+    ],
+    image: leaderFounderCEO,
+  },
+  {
+    name: "Name",
     role: "Advisor 1",
     tags: [
       "Principal at VC",
@@ -73,16 +83,6 @@ const LEADERS: Leader[] = [
       "MBA, University of Chicago (Chicago Booth)",
     ],
     image: leaderAdvisor1,
-  },
-  {
-    name: "Name",
-    role: "Founder/CEO",
-    tags: [
-      "Systems Builder",
-      "Product Leader",
-      "MSc, Information & Automation Engineering",
-    ],
-    image: leaderFounderCEO,
   },
   {
     name: "Name",
@@ -95,7 +95,7 @@ const LEADERS: Leader[] = [
     ],
     image: leaderAdvisor2,
   },
-  // remaining slots stay empty placeholders — grid still renders 6 total below
+  // remaining slots stay empty placeholders — CEO rendered separately as the apex above this grid
 ];
 
 interface ModalCtxValue {
@@ -1831,25 +1831,30 @@ function AboutLeadership() {
           <Label>Leadership</Label>
           <Heading className="mt-4 max-w-[580px]">A team taking shape around a consequential mission.</Heading>
         </Reveal>
-        {/* <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-5 mb-14">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <Reveal key={i} delay={i * 80} className="border border-border rounded-2xl p-8 flex flex-col items-center text-center gap-4 hover:border-[rgba(27,67,50,0.25)] hover:shadow-sm transition-all duration-200">
-              <div className="w-16 h-16 rounded-full bg-[#EAE6DE] border border-border flex items-center justify-center">
-                <div className="w-8 h-8 rounded-full bg-[rgba(27,67,50,0.1)]" />
+        {/* Founder/CEO — featured, sits above the rest of the team */}
+        <Reveal className="mb-6">
+          <div className="bg-[#1B4332] rounded-2xl p-8 md:p-10 flex flex-col md:flex-row items-center md:items-start text-center md:text-left gap-6 md:gap-8">
+            <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-[#C8922A]/45 shrink-0">
+              <img src={leaders[0].image} alt={leaders[0].name} className="w-full h-full object-cover" />
+            </div>
+            <div>
+              <span className="text-[10px] font-semibold text-[#C8922A] uppercase tracking-widest" style={{ fontFamily: "'Geist Mono', monospace" }}>{leaders[0].role}</span>
+              <div className="flex flex-wrap justify-center md:justify-start items-center gap-x-1.5 gap-y-1 text-[12px] text-white/60 mt-3"
+                style={{ fontFamily: "'Geist Mono', monospace" }}>
+                {leaders[0].tags.map((tag, idx) => (
+                  <span key={idx} className="flex items-center gap-1.5">
+                    {idx > 0 && <span className="w-1 h-1 rounded-full bg-[#C8922A]/50" />}
+                    {tag}
+                  </span>
+                ))}
               </div>
-              <div>
-                <div className="w-24 h-3 bg-[#EAE6DE] rounded-full mb-2 mx-auto" />
-                <div className="w-16 h-2.5 bg-[#EAE6DE]/70 rounded-full mx-auto" />
-              </div>
-              <div className="flex items-center gap-1.5 text-[11px] text-[#6B7B6E]/50" style={{ fontFamily: "'Geist Mono', monospace" }}>
-                <span className="w-1 h-1 rounded-full bg-[#C8922A]/40" />Profile coming soon
-              </div>
-            </Reveal>
-          ))}
-        </div> */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-5 mb-14">
-  {Array.from({ length: 6 }).map((_, i) => {
-    const leader = leaders[i];
+            </div>
+          </div>
+        </Reveal>
+        {/* Advisors and remaining open seats */}
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5 mb-14">
+  {Array.from({ length: 5 }).map((_, i) => {
+    const leader = leaders[i + 1];
 
     if (leader) {
       return (
@@ -1866,7 +1871,6 @@ function AboutLeadership() {
             />
           </div>
           <div>
-            <div className="text-sm font-medium mb-1">{leader.name}</div>
             <div className="text-xs text-[#6B7B6E]">{leader.role}</div>
           </div>
           <div
@@ -1884,7 +1888,7 @@ function AboutLeadership() {
       );
     }
 
-    // fallback placeholder for empty slots (unchanged from your version)
+    // fallback placeholder for empty slots
     return (
       <Reveal
         key={i}
@@ -2067,136 +2071,108 @@ function TeamHero({ navigate }: { navigate: (p: Page) => void }) {
 }
 
 function LeadershipPlaceholders() {
-  // const ROLES = [
-  //   { title: "Chief Executive Officer", dept: "",  },
-  //   { title: "Chief Operating Officer", dept: "",  },
-  //   { title: "Chief Technology Officer", dept: "Engineering" },
-  //   { title: "Chief Agricultural Officer", dept: "Agri-Systems" },
-  //   { title: "Chief Data Officer", dept: "Data & AI" },
-  //   { title: "Head of Partnerships", dept: "Growth" },
-  // ];
-  // return (
-  //   <section className="bg-[#F6F3EE] py-28 md:py-36">
-  //     <div className="max-w-[1280px] mx-auto px-6 xl:px-10">
-  //       <Reveal className="mb-16">
-  //         <Label>Leadership</Label>
-  //         <Heading className="mt-4 max-w-[560px]">Building a world-class team around a consequential problem.</Heading>
-  //         <p className="text-[15px] text-[#6B7B6E] mt-5 max-w-[480px] leading-relaxed">We are assembling leaders with deep experience in agri-systems, technology, finance and impact. Profiles are published progressively as the team formalises.</p>
-  //       </Reveal>
-  //       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5 mb-12">
-  //         {ROLES.map((role, i) => (
-  //           <Reveal key={role.title} delay={i * 65}
-  //             className="bg-white border border-border rounded-2xl p-6 flex items-center gap-5 hover:border-[rgba(27,67,50,0.22)] hover:shadow-sm transition-all duration-200 group">
-  //             {/* Avatar ghost */}
-  //             <div className="w-14 h-14 rounded-full bg-[#EAE6DE] border border-border shrink-0 flex items-center justify-center group-hover:border-[rgba(27,67,50,0.2)] transition-colors">
-  //               <div className="w-7 h-7 rounded-full bg-[rgba(27,67,50,0.08)]" />
-  //             </div>
-  //             <div className="flex-1 min-w-0">
-  //               <div className="w-20 h-2.5 bg-[#EAE6DE] rounded-full mb-2" />
-  //               <p className="text-[13px] font-semibold text-[#0C1F14] mb-1">{role.title}</p>
-  //               <span className="text-[10px] font-semibold text-[#C8922A] bg-[#C8922A]/10 px-2 py-0.5 rounded-full" style={{ fontFamily: "'Geist Mono', monospace" }}>{role.dept}</span>
-  //             </div>
-  //             <div className="shrink-0 text-[10px] text-[#6B7B6E]/45 text-right" style={{ fontFamily: "'Geist Mono', monospace" }}>Coming<br />soon</div>
-  //           </Reveal>
-  //         ))}
-  //       </div>
-  //       <Reveal className="bg-[#0C1F14] rounded-2xl p-8 md:p-12 flex flex-col md:flex-row items-center gap-8">
-  //         <div className="flex-1">
-  //           <h3 style={{ fontFamily: "'Instrument Serif', serif" }} className="text-[22px] md:text-[28px] text-white mb-3">Know someone who should be on this list?</h3>
-  //           <p className="text-[14px] text-white/50 leading-relaxed">We are actively seeking leaders in agri-technology, supply chain finance, AI and pan-African business development. Introductions are always welcome.</p>
-  //         </div>
-  //         <a href="#" className="shrink-0 inline-flex items-center gap-2 bg-[#C8922A] text-white text-[14px] font-medium px-6 py-3.5 rounded-full hover:bg-[#b07d22] transition-all">
-  //           Make an introduction <ArrowRight className="w-4 h-4" />
-  //         </a>
-  //       </Reveal>
-  //     </div>
-  //   </section>
-  // );
+  const BASE_SLOTS = 5; // advisors + open seats form the base row(s) beneath the CEO
+  const ceo = LEADERS[0];
 
-  const TOTAL_SLOTS = 6; // keeps the grid at 6 cards even with fewer filled leaders
+  return (
+    <section className="bg-[#F6F3EE] py-28 md:py-36">
+      <div className="max-w-[1280px] mx-auto px-6 xl:px-10">
+        <Reveal className="mb-16">
+          <Label>Leadership</Label>
+          <Heading className="mt-4 max-w-[560px]">Building a world-class team around a consequential problem.</Heading>
+          <p className="text-[15px] text-[#6B7B6E] mt-5 max-w-[480px] leading-relaxed">We are assembling leaders with deep experience in agri-systems, technology, finance and impact. Profiles are published progressively as the team formalises.</p>
+        </Reveal>
 
-return (
-  <section className="bg-[#F6F3EE] py-28 md:py-36">
-    <div className="max-w-[1280px] mx-auto px-6 xl:px-10">
-      <Reveal className="mb-16">
-        <Label>Leadership</Label>
-        <Heading className="mt-4 max-w-[560px]">Building a world-class team around a consequential problem.</Heading>
-        <p className="text-[15px] text-[#6B7B6E] mt-5 max-w-[480px] leading-relaxed">We are assembling leaders with deep experience in agri-systems, technology, finance and impact. Profiles are published progressively as the team formalises.</p>
-      </Reveal>
+        {/* Apex: Founder/CEO sits alone at the top, forming a triangle with the row below */}
+        <Reveal className="flex justify-center mb-5">
+          <div className="w-full max-w-sm bg-white border border-border rounded-2xl p-7 flex flex-col items-center text-center gap-4 hover:border-[rgba(27,67,50,0.22)] hover:shadow-sm transition-all duration-200">
+            <img src={ceo.image} alt={ceo.name} className="w-20 h-20 rounded-full object-cover border-2 border-[#C8922A]/40" />
+            <div>
+              <p className="text-[13px] font-semibold text-[#0C1F14] mb-1.5">{ceo.role}</p>
+              <div className="flex flex-wrap justify-center items-center gap-x-1.5 gap-y-1 text-[10px] text-[#6B7B6E]" style={{ fontFamily: "'Geist Mono', monospace" }}>
+                {ceo.tags.map((tag, idx) => (
+                  <span key={idx} className="flex items-center gap-1.5">
+                    {idx > 0 && <span className="w-1 h-1 rounded-full bg-[#C8922A]/50" />}
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+        </Reveal>
 
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5 mb-12">
-        {Array.from({ length: TOTAL_SLOTS }).map((_, i) => {
-          const leader = LEADERS[i];
+        <div className="flex justify-center mb-5">
+          <div className="w-px h-8 bg-[rgba(27,67,50,0.18)]" />
+        </div>
 
-          return (
-            <Reveal
-              key={leader?.name ?? `slot-${i}`}
-              delay={i * 65}
-              className="bg-white border border-border rounded-2xl p-6 flex items-center gap-5 hover:border-[rgba(27,67,50,0.22)] hover:shadow-sm transition-all duration-200 group"
-            >
-              {leader?.image ? (
-                <img
-                  src={leader.image}
-                  alt={leader.name}
-                  className="w-14 h-14 rounded-full object-cover border border-border shrink-0"
-                />
-              ) : (
-                <div className="w-14 h-14 rounded-full bg-[#EAE6DE] border border-border shrink-0 flex items-center justify-center group-hover:border-[rgba(27,67,50,0.2)] transition-colors">
-                  <div className="w-7 h-7 rounded-full bg-[rgba(27,67,50,0.08)]" />
-                </div>
-              )}
+        {/* Base: advisors and open seats */}
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5 mb-12">
+          {Array.from({ length: BASE_SLOTS }).map((_, i) => {
+            const leader = LEADERS[i + 1];
 
-              <div className="flex-1 min-w-0">
-                {/* {leader?.name ? (
-                  <p className="text-[13px] font-semibold text-[#0C1F14] mb-1">{leader.name}</p>
+            return (
+              <Reveal
+                key={`slot-${i}`}
+                delay={i * 65}
+                className="bg-white border border-border rounded-2xl p-6 flex items-center gap-5 hover:border-[rgba(27,67,50,0.22)] hover:shadow-sm transition-all duration-200 group"
+              >
+                {leader?.image ? (
+                  <img
+                    src={leader.image}
+                    alt={leader.name}
+                    className="w-14 h-14 rounded-full object-cover border border-border shrink-0"
+                  />
                 ) : (
-                  <div className="w-20 h-2.5 bg-[#EAE6DE] rounded-full mb-2" />
-                )} */}
+                  <div className="w-14 h-14 rounded-full bg-[#EAE6DE] border border-border shrink-0 flex items-center justify-center group-hover:border-[rgba(27,67,50,0.2)] transition-colors">
+                    <div className="w-7 h-7 rounded-full bg-[rgba(27,67,50,0.08)]" />
+                  </div>
+                )}
 
-                <p className="text-[13px] font-semibold text-[#0C1F14] mb-1">
-                  {leader?.role ?? ""}
-                </p>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[13px] font-semibold text-[#0C1F14] mb-1">
+                    {leader?.role ?? ""}
+                  </p>
 
-                {leader ? (
+                  {leader ? (
+                    <div
+                      className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-[10px] text-[#6B7B6E]"
+                      style={{ fontFamily: "'Geist Mono', monospace" }}
+                    >
+                      {leader.tags.map((tag, idx) => (
+                        <span key={idx} className="flex items-center gap-1.5">
+                          {idx > 0 && <span className="w-1 h-1 rounded-full bg-[#C8922A]/50" />}
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
+
+                {!leader && (
                   <div
-                    className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-[10px] text-[#6B7B6E]"
+                    className="shrink-0 text-[10px] text-[#6B7B6E]/45 text-right"
                     style={{ fontFamily: "'Geist Mono', monospace" }}
                   >
-                    {leader.tags.map((tag, idx) => (
-                      <span key={idx} className="flex items-center gap-1.5">
-                        {idx > 0 && <span className="w-1 h-1 rounded-full bg-[#C8922A]/50" />}
-                        {tag}
-                      </span>
-                    ))}
+                    Coming<br />soon
                   </div>
-                ) : null}
-              </div>
-
-              {!leader && (
-                <div
-                  className="shrink-0 text-[10px] text-[#6B7B6E]/45 text-right"
-                  style={{ fontFamily: "'Geist Mono', monospace" }}
-                >
-                  Coming<br />soon
-                </div>
-              )}
-            </Reveal>
-          );
-        })}
-      </div>
-
-      <Reveal className="bg-[#0C1F14] rounded-2xl p-8 md:p-12 flex flex-col md:flex-row items-center gap-8">
-        <div className="flex-1">
-          <h3 style={{ fontFamily: "'Instrument Serif', serif" }} className="text-[22px] md:text-[28px] text-white mb-3">Know someone who should be on this list?</h3>
-          <p className="text-[14px] text-white/50 leading-relaxed">We are actively seeking leaders in agri-technology, supply chain finance, AI and pan-African business development. Introductions are always welcome.</p>
+                )}
+              </Reveal>
+            );
+          })}
         </div>
-        <a href="#" className="shrink-0 inline-flex items-center gap-2 bg-[#C8922A] text-white text-[14px] font-medium px-6 py-3.5 rounded-full hover:bg-[#b07d22] transition-all">
-          Make an introduction <ArrowRight className="w-4 h-4" />
-        </a>
-      </Reveal>
-    </div>
-  </section>
-);
+
+        <Reveal className="bg-[#0C1F14] rounded-2xl p-8 md:p-12 flex flex-col md:flex-row items-center gap-8">
+          <div className="flex-1">
+            <h3 style={{ fontFamily: "'Instrument Serif', serif" }} className="text-[22px] md:text-[28px] text-white mb-3">Know someone who should be on this list?</h3>
+            <p className="text-[14px] text-white/50 leading-relaxed">We are actively seeking leaders in agri-technology, supply chain finance, AI and pan-African business development. Introductions are always welcome.</p>
+          </div>
+          <a href="#" className="shrink-0 inline-flex items-center gap-2 bg-[#C8922A] text-white text-[14px] font-medium px-6 py-3.5 rounded-full hover:bg-[#b07d22] transition-all">
+            Make an introduction <ArrowRight className="w-4 h-4" />
+          </a>
+        </Reveal>
+      </div>
+    </section>
+  );
 }
 
 function CrossFunctionalExpertise() {
