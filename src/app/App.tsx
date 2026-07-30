@@ -225,7 +225,7 @@ function DemoBtn({ className = "" }: { className?: string }) {
   const { open } = useModal();
   return (
     <button onClick={() => open("demo")}
-      className={`inline-flex items-center gap-2 font-medium rounded-full transition-all duration-250 bg-[#C8922A] text-white hover:bg-[#b07d22] hover:shadow-[0_4px_22px_rgba(200,146,42,0.38)] ${className}`}>
+      className={`inline-flex items-center gap-2 font-medium rounded-full transition-all duration-250 bg-[#C8922A] text-white hover:bg-[#b07d22] hover:shadow-[0_4px_22px_rgba(200,146,42,0.38)] cursor-pointer ${className}`}>
       Request a Demo <ArrowRight className="w-4 h-4" />
     </button>
   );
@@ -491,14 +491,14 @@ function GlobalNav({ page, navigate }: NavProps) {
       scrolled ? "bg-[#0C1F14]/97 backdrop-blur-xl border-b border-white/8" : "bg-transparent"
     }`}>
       <div className="max-w-[1280px] mx-auto px-6 xl:px-10 h-[60px] flex items-center justify-between">
-        <button onClick={() => { navigate("home"); setMobileOpen(false); }} className="flex items-center">
-          <img src={lucentLogo} alt="Lucent Ag" className="h-8 w-auto" />
+        <button onClick={() => { navigate("home"); setMobileOpen(false); }} className="flex items-center cursor-pointer group">
+          <img src={lucentLogo} alt="Lucent Ag" className="h-8 w-auto transition-all duration-200 group-hover:opacity-80 group-hover:scale-[1.04]" />
         </button>
 
         <nav className="hidden lg:flex items-center gap-7" aria-label="Main navigation">
           <div ref={dropRef} className="relative" onMouseEnter={openDrop} onMouseLeave={closeDrop}>
             <button aria-haspopup="true" aria-expanded={dropOpen} onKeyDown={handleKeyDown}
-              className="flex items-center gap-1 text-[13px] font-medium text-white/48 hover:text-white transition-colors duration-150 outline-none focus-visible:ring-2 focus-visible:ring-[#C8922A] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0C1F14] rounded-sm px-0.5">
+              className="flex items-center gap-1 text-[13px] font-medium text-white/48 hover:text-white transition-colors duration-150 outline-none focus-visible:ring-2 focus-visible:ring-[#C8922A] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0C1F14] rounded-sm px-0.5 cursor-pointer">
               Company
               <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${dropOpen ? "rotate-180" : ""}`} />
             </button>
@@ -581,8 +581,8 @@ function SiteFooter({ navigate }: { navigate: (p: Page) => void }) {
       <div className="max-w-[1280px] mx-auto px-6 xl:px-10">
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8 mb-14">
           <div className="col-span-2 md:col-span-3 lg:col-span-1">
-            <button onClick={() => navigate("home")} className="flex items-center mb-5">
-              <img src={lucentLogo} alt="Lucent Ag" className="h-8 w-auto" />
+            <button onClick={() => navigate("home")} className="flex items-center mb-5 cursor-pointer group">
+              <img src={lucentLogo} alt="Lucent Ag" className="h-8 w-auto transition-all duration-200 group-hover:opacity-80 group-hover:scale-[1.04]" />
             </button>
             <p className="text-[13px] text-white/30 leading-relaxed max-w-[190px]">
               The operating system for Africa's post-harvest economy.
@@ -1276,11 +1276,14 @@ function ArticleCard({ article, featured = false }: { article: Article; featured
 }
 
 function IntelligenceSection() {
-  const allSrcs = Object.keys(FEED_META) as FeedSrc[];
-  const [activeSrc, setActiveSrc] = useState<FeedSrc | "All">("All");
-  const [search, setSearch] = useState("");
-  const filtered = ARTICLES.filter(a => (activeSrc === "All" || a.src === activeSrc) && (!search || a.title.toLowerCase().includes(search.toLowerCase()) || a.category.toLowerCase().includes(search.toLowerCase())));
-  const [feat, ...rest] = filtered;
+  // Old mock-data-driven search/filter/card UI — superseded by the live rss.app widget below.
+  // ARTICLES, FEED_META, SrcChip and ArticleCard are left defined (unused) in case this is reinstated.
+  //
+  // const allSrcs = Object.keys(FEED_META) as FeedSrc[];
+  // const [activeSrc, setActiveSrc] = useState<FeedSrc | "All">("All");
+  // const [search, setSearch] = useState("");
+  // const filtered = ARTICLES.filter(a => (activeSrc === "All" || a.src === activeSrc) && (!search || a.title.toLowerCase().includes(search.toLowerCase()) || a.category.toLowerCase().includes(search.toLowerCase())));
+  // const [feat, ...rest] = filtered;
   return (
     <section className="py-28 md:py-36 bg-[#F6F3EE]">
       <div className="max-w-[1280px] mx-auto px-6 xl:px-10">
@@ -1295,12 +1298,12 @@ function IntelligenceSection() {
               </div>
               <Heading className="max-w-[520px]">Research powering food system decisions.</Heading>
             </div>
-            <div className="text-right shrink-0">
-              <p className="text-[12px] text-[#6B7B6E] mb-1">Live feeds from</p>
-              <p className="text-[11px] text-[#6B7B6E]/55" style={{ fontFamily: "'Geist Mono', monospace" }}>FAO · IFAD · CGIAR · WFP · World Bank · AfDB</p>
-            </div>
           </div>
         </Reveal>
+        <div className="bg-white rounded-2xl border border-border p-2 overflow-hidden">
+          <rssapp-wall id="HFYYXyCUCqQFHvWn"></rssapp-wall>
+        </div>
+        {/*
         <div className="flex flex-col sm:flex-row gap-3 mb-8">
           <div className="relative max-w-[340px]">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#6B7B6E]" />
@@ -1323,6 +1326,7 @@ function IntelligenceSection() {
             <button onClick={() => { setActiveSrc("All"); setSearch(""); }} className="text-[13px] text-[#1B4332] font-medium hover:underline">Clear filters</button>
           </div>
         )}
+        */}
       </div>
     </section>
   );
