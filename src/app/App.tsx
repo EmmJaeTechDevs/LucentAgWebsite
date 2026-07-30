@@ -18,6 +18,19 @@ import leaderAdvisor2 from "@/assets/Advisor.png";
 // Types & Routing
 // ─────────────────────────────────────────────────────────────────────────────
 type Page = "home" | "about" | "team" | "ecosystem" | "solutions" | "intelligence" | "careers";
+
+// This is a single-page app — the URL never actually changes on navigation, so GA's
+// automatic pageview only fires once on load. These virtual paths let us send a
+// page_view event per in-app "page" so navigation still shows up in Analytics.
+const PAGE_PATHS: Record<Page, { path: string; title: string }> = {
+  home:         { path: "/",             title: "Home" },
+  about:        { path: "/about",        title: "About" },
+  team:         { path: "/team",         title: "Team" },
+  ecosystem:    { path: "/ecosystem",    title: "Ecosystem" },
+  solutions:    { path: "/solutions",    title: "Solutions" },
+  intelligence: { path: "/intelligence", title: "Intelligence" },
+  careers:      { path: "/careers",      title: "Careers" },
+};
 type ModalType = "demo" | "contact" | "video" | "privacy" | "terms" | "cookies" | "security" | null;
 
 interface Leader {
@@ -3165,6 +3178,16 @@ export default function App() {
     setPage(target);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
+
+  useEffect(() => {
+    if (typeof window.gtag !== "function") return;
+    const { path, title } = PAGE_PATHS[page];
+    window.gtag("event", "page_view", {
+      page_path: path,
+      page_title: `Lucent Ag — ${title}`,
+      page_location: window.location.href,
+    });
+  }, [page]);
 
   const openModal = useCallback((m: ModalType, heading?: string) => { setModal(m); setModalHeading(heading); }, []);
   const closeModal = useCallback(() => setModal(null), []);
