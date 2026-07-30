@@ -2964,7 +2964,7 @@ function VideoModal({ onClose }: { onClose: () => void }) {
 
         <div className="px-7 py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <p className="text-[13px] text-white/38 leading-relaxed max-w-[440px]">
-            Want a walkthrough tailored to your role? Request a demo and our team will take you through it live.
+            To receive the full stakeholder overview video, request a demo and our team will share access directly.
           </p>
           <button onClick={() => { onClose(); setTimeout(() => open("demo"), 50); }}
             className="shrink-0 inline-flex items-center gap-2 bg-[#C8922A] text-white text-[13px] font-medium px-5 py-2.5 rounded-full hover:bg-[#b07d22] transition-colors whitespace-nowrap">
