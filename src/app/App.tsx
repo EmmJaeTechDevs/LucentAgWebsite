@@ -18,7 +18,7 @@ import leaderAdvisor2 from "@/assets/Advisor.png";
 // Types & Routing
 // ─────────────────────────────────────────────────────────────────────────────
 type Page = "home" | "about" | "team" | "ecosystem" | "solutions" | "intelligence" | "careers";
-type ModalType = "demo" | "contact" | "video" | null;
+type ModalType = "demo" | "contact" | "video" | "privacy" | "terms" | "cookies" | "security" | null;
 
 interface Leader {
   name: string;
@@ -99,7 +99,7 @@ const LEADERS: Leader[] = [
 ];
 
 interface ModalCtxValue {
-  open: (m: ModalType) => void;
+  open: (m: ModalType, heading?: string) => void;
   close: () => void;
 }
 const ModalCtx = createContext<ModalCtxValue>({ open: () => {}, close: () => {} });
@@ -206,12 +206,12 @@ function Heading({ children, light = false, className = "" }: {
   );
 }
 
-function Reveal({ children, className = "", delay = 0 }: {
-  children: React.ReactNode; className?: string; delay?: number;
+function Reveal({ children, className = "", delay = 0, onClick }: {
+  children: React.ReactNode; className?: string; delay?: number; onClick?: () => void;
 }) {
   const { ref, inView } = useInView(0.1);
   return (
-    <div ref={ref} className={className} style={{
+    <div ref={ref} className={className} onClick={onClick} style={{
       opacity: inView ? 1 : 0,
       transform: inView ? "translateY(0)" : "translateY(22px)",
       transition: `opacity 0.75s ease ${delay}ms, transform 0.75s ease ${delay}ms`,
@@ -567,8 +567,15 @@ const FOOTER_COLS: Record<string, string[]> = {
   Resources: ["Documentation", "Case Studies", "Research", "Newsletter"],
   Legal:     ["Privacy", "Terms", "Cookies", "Security"],
 };
-const FOOTER_ACTIVE_ITEMS = new Set(["About", "Team"]);
+const FOOTER_ACTIVE_ITEMS = new Set(["About", "Team", "Privacy", "Terms", "Cookies", "Security"]);
+const FOOTER_LEGAL_TARGETS: Record<string, ModalType> = {
+  Privacy: "privacy",
+  Terms: "terms",
+  Cookies: "cookies",
+  Security: "security",
+};
 function SiteFooter({ navigate }: { navigate: (p: Page) => void }) {
+  const { open } = useModal();
   return (
     <footer className="bg-[#0C1F14] pt-16 pb-10">
       <div className="max-w-[1280px] mx-auto px-6 xl:px-10">
@@ -596,7 +603,9 @@ function SiteFooter({ navigate }: { navigate: (p: Page) => void }) {
               <ul className="flex flex-col gap-2.5">
                 {items.map(item => (
                   <li key={item}>
-                    {FOOTER_ACTIVE_ITEMS.has(item) ? (
+                    {FOOTER_LEGAL_TARGETS[item] ? (
+                      <button onClick={() => open(FOOTER_LEGAL_TARGETS[item])} className="text-[13px] text-white/36 hover:text-white/75 transition-colors text-left">{item}</button>
+                    ) : FOOTER_ACTIVE_ITEMS.has(item) ? (
                       <a href="#" className="text-[13px] text-white/36 hover:text-white/75 transition-colors">{item}</a>
                     ) : (
                       <span className="text-[13px] text-white/14 cursor-not-allowed select-none">{item}</span>
@@ -1933,6 +1942,7 @@ function AboutLeadership() {
 }
 
 function AboutCareersPreview() {
+  const { open } = useModal();
   const roles = [
     { title: "Head of Product — Intelligence Layer", location: "Nairobi, Kenya · Hybrid", type: "Full-time", dept: "Product" },
     { title: "Senior Software Engineer — Data Platform", location: "Lagos, Nigeria · Remote", type: "Full-time", dept: "Engineering" },
@@ -1952,7 +1962,7 @@ function AboutCareersPreview() {
         </Reveal>
         <div className="flex flex-col gap-3 mb-10">
           {roles.map((role, i) => (
-            <Reveal key={role.title} delay={i * 80} className="group bg-white/5 hover:bg-white/10 border border-white/12 hover:border-white/22 rounded-xl px-6 py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all duration-200 cursor-pointer">
+            <Reveal key={role.title} delay={i * 80} onClick={() => open("contact", role.title)} className="group bg-white/5 hover:bg-white/10 border border-white/12 hover:border-white/22 rounded-xl px-6 py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all duration-200 cursor-pointer">
               <div>
                 <div className="flex items-center gap-2 mb-1.5">
                   <span className="text-[10px] font-semibold text-[#C8922A] bg-[#C8922A]/15 px-2 py-0.5 rounded-full" style={{ fontFamily: "'Geist Mono', monospace" }}>{role.dept}</span>
@@ -1980,9 +1990,9 @@ function AboutCareersPreview() {
 function AboutCTA() {
   const { open } = useModal();
   const cards = [
-    { Icon: BarChart3,     label: "Request a Demo",         desc: "See the Lucent Ag platform in action. We'll walk you through the intelligence layer, the trade network and the finance rail.", cta: "Book a demo",          primary: true },
-    { Icon: Users,         label: "Partner with Lucent Ag", desc: "Whether you are a development organisation, financial institution or logistics operator, there is a partnership model for you.", cta: "Start a conversation", primary: false },
-    { Icon: MessageSquare, label: "Contact Us",              desc: "Press enquiries, investor relations, technical questions or general correspondence. We respond to every message.", cta: "Get in touch",          primary: false },
+    { Icon: BarChart3,     label: "Request a Demo",         desc: "See the Lucent Ag platform in action. We'll walk you through the intelligence layer, the trade network and the finance rail.", cta: "Book a demo",          primary: true,  action: () => open("demo") },
+    { Icon: Users,         label: "Partner with Lucent Ag", desc: "Whether you are a development organisation, financial institution or logistics operator, there is a partnership model for you.", cta: "Start a conversation", primary: false, action: () => open("contact", "Partner with Lucent Ag") },
+    { Icon: MessageSquare, label: "Contact Us",              desc: "Press enquiries, investor relations, technical questions or general correspondence. We respond to every message.", cta: "Get in touch",          primary: false, action: () => open("contact") },
   ];
   return (
     <section className="py-20 md:py-28 px-6 xl:px-10 bg-[#F6F3EE]">
@@ -1992,7 +2002,7 @@ function AboutCTA() {
           <Heading className="mt-4 max-w-[560px] mx-auto">Ready to take the next step?</Heading>
         </Reveal>
         <div className="grid md:grid-cols-3 gap-5">
-          {cards.map(({ Icon, label, desc, cta, primary }, i) => (
+          {cards.map(({ Icon, label, desc, cta, primary, action }, i) => (
             <Reveal key={label} delay={i * 90} className={`rounded-2xl p-8 flex flex-col gap-5 border transition-all duration-200 hover:shadow-[0_8px_32px_rgba(27,67,50,0.12)] ${primary ? "bg-[#1B4332] border-[#1B4332]" : "bg-white border-border hover:border-[rgba(27,67,50,0.25)]"}`}>
               <div className={`w-11 h-11 rounded-xl flex items-center justify-center ${primary ? "bg-white/12" : "bg-[#1B4332]/8"}`}>
                 <Icon className={`w-5 h-5 ${primary ? "text-white" : "text-[#1B4332]"}`} strokeWidth={1.5} />
@@ -2001,15 +2011,9 @@ function AboutCTA() {
                 <h3 className={`text-[17px] font-semibold mb-2 ${primary ? "text-white" : "text-[#0C1F14]"}`} style={{ fontFamily: "'Instrument Serif', serif" }}>{label}</h3>
                 <p className={`text-[14px] leading-relaxed ${primary ? "text-white/60" : "text-[#6B7B6E]"}`}>{desc}</p>
               </div>
-              {cta === "Get in touch" ? (
-                <button onClick={() => open("contact")} className={`mt-auto inline-flex items-center gap-2 text-[13px] font-medium transition-all group ${primary ? "text-[#C8922A] hover:gap-3" : "text-[#1B4332] hover:gap-3"}`}>
-                  {cta} <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
-                </button>
-              ) : (
-                <a href="#" className={`mt-auto inline-flex items-center gap-2 text-[13px] font-medium transition-all group ${primary ? "text-[#C8922A] hover:gap-3" : "text-[#1B4332] hover:gap-3"}`}>
-                  {cta} <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
-                </a>
-              )}
+              <button onClick={action} className={`mt-auto inline-flex items-center gap-2 text-[13px] font-medium transition-all group ${primary ? "text-[#C8922A] hover:gap-3" : "text-[#1B4332] hover:gap-3"}`}>
+                {cta} <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+              </button>
             </Reveal>
           ))}
         </div>
@@ -2080,6 +2084,7 @@ function TeamHero({ navigate }: { navigate: (p: Page) => void }) {
 }
 
 function LeadershipPlaceholders() {
+  const { open } = useModal();
   const BASE_SLOTS = 5; // advisors + open seats form the base row(s) beneath the CEO
   const ceo = LEADERS[0];
 
@@ -2175,9 +2180,9 @@ function LeadershipPlaceholders() {
             <h3 style={{ fontFamily: "'Instrument Serif', serif" }} className="text-[22px] md:text-[28px] text-white mb-3">Know someone who should be on this list?</h3>
             <p className="text-[14px] text-white/50 leading-relaxed">We are actively seeking leaders in agri-technology, supply chain finance, AI and pan-African business development. Introductions are always welcome.</p>
           </div>
-          <a href="#" className="shrink-0 inline-flex items-center gap-2 bg-[#C8922A] text-white text-[14px] font-medium px-6 py-3.5 rounded-full hover:bg-[#b07d22] transition-all">
+          <button onClick={() => open("contact", "Make an introduction")} className="shrink-0 inline-flex items-center gap-2 bg-[#C8922A] text-white text-[14px] font-medium px-6 py-3.5 rounded-full hover:bg-[#b07d22] transition-all">
             Make an introduction <ArrowRight className="w-4 h-4" />
-          </a>
+          </button>
         </Reveal>
       </div>
     </section>
@@ -2425,6 +2430,7 @@ function LifeAtLucentAg() {
 }
 
 function JoinOurJourney() {
+  const { open } = useModal();
   const ROLES = [
     { title: "Senior Product Manager — Commerce Layer", location: "Nairobi, Kenya · Hybrid", type: "Full-time", dept: "Product" },
     { title: "Machine Learning Engineer — Quality Grading", location: "Remote · Africa-based preferred", type: "Full-time", dept: "Engineering" },
@@ -2446,7 +2452,7 @@ function JoinOurJourney() {
         </Reveal>
         <div className="flex flex-col gap-3 mb-10">
           {ROLES.map((role, i) => (
-            <Reveal key={role.title} delay={i * 70}
+            <Reveal key={role.title} delay={i * 70} onClick={() => open("contact", role.title)}
               className="group bg-white/5 hover:bg-white/10 border border-white/12 hover:border-white/22 rounded-xl px-6 py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all duration-200 cursor-pointer">
               <div>
                 <div className="flex items-center gap-2 mb-1.5">
@@ -2467,7 +2473,7 @@ function JoinOurJourney() {
           <p className="text-[12px] text-white/30 mb-5" style={{ fontFamily: "'Geist Mono', monospace" }}>Roles are illustrative. All openings subject to confirmation. We also welcome speculative applications.</p>
           <div className="flex flex-col sm:flex-row gap-4">
             <a href="#" className="inline-flex items-center gap-2 border border-white/22 text-white text-[14px] font-medium px-6 py-3 rounded-full hover:bg-white/8 hover:border-white/35 transition-all">All openings <ArrowRight className="w-4 h-4" /></a>
-            <a href="#" className="inline-flex items-center gap-2 text-white/55 text-[14px] font-medium px-6 py-3 hover:text-white transition-colors">Send a speculative application <ChevronRight className="w-4 h-4" /></a>
+            <button onClick={() => open("contact", "Send a speculative application")} className="inline-flex items-center gap-2 text-white/55 text-[14px] font-medium px-6 py-3 hover:text-white transition-colors">Send a speculative application <ChevronRight className="w-4 h-4" /></button>
           </div>
         </Reveal>
       </div>
@@ -2519,7 +2525,7 @@ function TeamPage({ navigate }: { navigate: (p: Page) => void }) {
       <OurCommitments />
       <InclusiveCulture />
       <LifeAtLucentAg />
-      <JoinOurJourney />
+      {/* <JoinOurJourney /> */}
       <TeamContactCTA />
     </>
   );
@@ -2802,7 +2808,7 @@ function DemoModal({ onClose }: { onClose: () => void }) {
   );
 }
 
-function ContactModal({ onClose }: { onClose: () => void }) {
+function ContactModal({ onClose, heading = "Contact our team" }: { onClose: () => void; heading?: string }) {
   const [step, setStep] = useState<"form" | "success">("form");
   const [form, setForm] = useState({ firstName: "", lastName: "", email: "", org: "", role: "", country: "", message: "" });
   const [submitting, setSubmitting] = useState(false);
@@ -2822,7 +2828,7 @@ function ContactModal({ onClose }: { onClose: () => void }) {
       "Role": form.role,
       "Message": form.message,
     };
-    const mailto = buildMailtoLink(LUCENT_AG_EMAIL, `Contact request — ${form.org || `${form.firstName} ${form.lastName}`.trim()}`, contactRequest);
+    const mailto = buildMailtoLink(LUCENT_AG_EMAIL, `${heading} — ${form.org || `${form.firstName} ${form.lastName}`.trim()}`, contactRequest);
     setTimeout(() => {
       window.location.href = mailto;
       setSubmitting(false);
@@ -2839,7 +2845,7 @@ function ContactModal({ onClose }: { onClose: () => void }) {
           <>
             <div className="bg-[#0C1F14] px-8 py-7 flex items-start justify-between shrink-0">
               <div>
-                <Label>Contact our team</Label>
+                <Label>{heading}</Label>
                 <h2 style={{ fontFamily: "'Instrument Serif', serif" }} className="text-[26px] text-white mt-1 leading-tight">
                   Let's start a conversation.
                 </h2>
@@ -2960,10 +2966,10 @@ function VideoModal({ onClose }: { onClose: () => void }) {
                   <svg width="26" height="26" viewBox="0 0 24 24" fill="white" className="ml-1"><polygon points="5 3 19 12 5 21 5 3" /></svg>
                 </button>
                 <div>
-                  <p style={{ fontFamily: "'Instrument Serif', serif" }} className="text-[22px] text-white italic mb-2">Stakeholder Overview</p>
-                  <p className="text-[13.5px] text-white/50 max-w-[420px] leading-relaxed">
+                  <p style={{ fontFamily: "'Instrument Serif', serif" }} className="text-[22px] text-white italic mb-2">About LucentAg</p>
+                  {/* <p className="text-[13.5px] text-white/50 max-w-[420px] leading-relaxed">
                     Video available upon request
-                  </p>
+                  </p> */}
                 </div>
               </div>
               <div className="absolute inset-0 bg-gradient-to-t from-[#0C1F14]/60 to-transparent pointer-events-none" />
@@ -2985,19 +2991,178 @@ function VideoModal({ onClose }: { onClose: () => void }) {
   );
 }
 
+const LEGAL_CONTENT: Record<string, { title: string; date: string; body: React.ReactNode }> = {
+  privacy: {
+    title: "Privacy Policy",
+    date: "Effective 1 January 2025",
+    body: (
+      <div className="flex flex-col gap-7 text-[14.5px] text-[#6B7B6E] leading-relaxed">
+        <p>Lucent Ag Technologies Ltd ("Lucent Ag", "we", "us" or "our") is committed to protecting the privacy of everyone who interacts with our platform and website. This Privacy Policy explains how we collect, use, store and share personal data.</p>
+        <div>
+          <h3 className="text-[15px] font-semibold text-[#0C1F14] mb-2">1. Data we collect</h3>
+          <p>We may collect: contact details (name, email, phone number, job title, organisation); usage data (pages visited, features used, device and browser information); communications (messages sent through our contact forms or support channels); and transaction data when you use the Lucent Ag platform.</p>
+        </div>
+        <div>
+          <h3 className="text-[15px] font-semibold text-[#0C1F14] mb-2">2. How we use your data</h3>
+          <p>We use personal data to provide and improve our services; respond to enquiries and demo requests; send relevant product updates and research (with your consent); comply with legal obligations; and prevent fraud and ensure platform security.</p>
+        </div>
+        <div>
+          <h3 className="text-[15px] font-semibold text-[#0C1F14] mb-2">3. Data sharing</h3>
+          <p>We do not sell your personal data. We may share data with trusted service providers who process data on our behalf (subject to strict data processing agreements), regulatory authorities where required by law, and business partners only with your explicit consent.</p>
+        </div>
+        <div>
+          <h3 className="text-[15px] font-semibold text-[#0C1F14] mb-2">4. Data retention</h3>
+          <p>We retain personal data only for as long as necessary to fulfil the purposes for which it was collected, or as required by applicable law.</p>
+        </div>
+        <div>
+          <h3 className="text-[15px] font-semibold text-[#0C1F14] mb-2">5. Your rights</h3>
+          <p>Depending on your jurisdiction, you may have the right to access, rectify, erase or restrict the processing of your personal data. To exercise any of these rights, please contact us at privacy@lucentag.com.</p>
+        </div>
+        <div>
+          <h3 className="text-[15px] font-semibold text-[#0C1F14] mb-2">6. International transfers</h3>
+          <p>Lucent Ag operates across Africa and may process data in multiple jurisdictions. We ensure appropriate safeguards are in place for all international data transfers.</p>
+        </div>
+        <div>
+          <h3 className="text-[15px] font-semibold text-[#0C1F14] mb-2">7. Contact</h3>
+          <p>Questions about this policy should be directed to our Data Protection Officer at privacy@lucentag.com or to our registered address: Lucent Ag Technologies Ltd, Lagos, Nigeria.</p>
+        </div>
+        <p className="text-[12px] text-[#6B7B6E]/50 border-t border-border pt-5">This is a draft policy document. Final legal text will be verified by qualified legal counsel before publication.</p>
+      </div>
+    ),
+  },
+  terms: {
+    title: "Terms of Service",
+    date: "Effective 1 January 2025",
+    body: (
+      <div className="flex flex-col gap-7 text-[14.5px] text-[#6B7B6E] leading-relaxed">
+        <p>These Terms of Service govern your access to and use of the Lucent Ag platform, website and associated services. By accessing our services you agree to be bound by these terms.</p>
+        <div>
+          <h3 className="text-[15px] font-semibold text-[#0C1F14] mb-2">1. Acceptance</h3>
+          <p>By creating an account or accessing any Lucent Ag service, you confirm that you have read, understood and agreed to these Terms. If you do not agree, you may not use our services.</p>
+        </div>
+        <div>
+          <h3 className="text-[15px] font-semibold text-[#0C1F14] mb-2">2. Services</h3>
+          <p>Lucent Ag provides a technology platform for agricultural value chain participants, including tools for market intelligence, trade facilitation, logistics coordination and embedded finance. The scope and features of services may change over time.</p>
+        </div>
+        <div>
+          <h3 className="text-[15px] font-semibold text-[#0C1F14] mb-2">3. User obligations</h3>
+          <p>You agree to provide accurate information, maintain the confidentiality of your account credentials, use the platform only for lawful purposes and in accordance with these Terms, and not to interfere with or disrupt platform integrity or security.</p>
+        </div>
+        <div>
+          <h3 className="text-[15px] font-semibold text-[#0C1F14] mb-2">4. Intellectual property</h3>
+          <p>All content, software, data models and interfaces on the Lucent Ag platform are the intellectual property of Lucent Ag Technologies Ltd. You are granted a limited, non-exclusive, non-transferable licence to use the services for their intended purpose.</p>
+        </div>
+        <div>
+          <h3 className="text-[15px] font-semibold text-[#0C1F14] mb-2">5. Limitation of liability</h3>
+          <p>Lucent Ag shall not be liable for indirect, incidental or consequential damages arising from use of the platform. Our total aggregate liability shall not exceed the amounts paid by you in the preceding twelve months.</p>
+        </div>
+        <div>
+          <h3 className="text-[15px] font-semibold text-[#0C1F14] mb-2">6. Governing law</h3>
+          <p>These Terms are governed by the laws of Nigeria. Any disputes shall be subject to the exclusive jurisdiction of the courts of Lagos State.</p>
+        </div>
+        <p className="text-[12px] text-[#6B7B6E]/50 border-t border-border pt-5">This is a draft document. Final legal text will be verified by qualified legal counsel before publication.</p>
+      </div>
+    ),
+  },
+  cookies: {
+    title: "Cookie Policy",
+    date: "Effective 1 January 2025",
+    body: (
+      <div className="flex flex-col gap-7 text-[14.5px] text-[#6B7B6E] leading-relaxed">
+        <p>This Cookie Policy explains how Lucent Ag Technologies Ltd uses cookies and similar tracking technologies on our website and platform.</p>
+        <div>
+          <h3 className="text-[15px] font-semibold text-[#0C1F14] mb-2">What are cookies?</h3>
+          <p>Cookies are small text files stored on your device when you visit a website. They help us recognise your browser, remember your preferences, and understand how you use our services.</p>
+        </div>
+        <div>
+          <h3 className="text-[15px] font-semibold text-[#0C1F14] mb-2">Cookies we use</h3>
+          <p><strong className="text-[#0C1F14]">Essential cookies</strong> are necessary for the platform to function and cannot be disabled. They enable authentication, security and basic functionality.</p>
+          <p className="mt-3"><strong className="text-[#0C1F14]">Analytics cookies</strong> help us understand how visitors interact with our site so we can improve the experience. We use anonymised data only.</p>
+          <p className="mt-3"><strong className="text-[#0C1F14]">Preference cookies</strong> remember settings such as language and display preferences.</p>
+        </div>
+        <div>
+          <h3 className="text-[15px] font-semibold text-[#0C1F14] mb-2">Managing cookies</h3>
+          <p>You can control cookie settings through your browser preferences. Note that disabling certain cookies may affect platform functionality. A cookie consent banner will be implemented on the Lucent Ag website.</p>
+        </div>
+        <div>
+          <h3 className="text-[15px] font-semibold text-[#0C1F14] mb-2">Contact</h3>
+          <p>For questions about our use of cookies, contact us at privacy@lucentag.com.</p>
+        </div>
+        <p className="text-[12px] text-[#6B7B6E]/50 border-t border-border pt-5">This is a draft document pending final review.</p>
+      </div>
+    ),
+  },
+  security: {
+    title: "Security",
+    date: "Effective 1 January 2025",
+    body: (
+      <div className="flex flex-col gap-7 text-[14.5px] text-[#6B7B6E] leading-relaxed">
+        <p>Security is foundational to everything Lucent Ag builds. We handle sensitive agricultural transaction data, financial information and identity data for thousands of participants across Africa's food systems.</p>
+        <div>
+          <h3 className="text-[15px] font-semibold text-[#0C1F14] mb-2">Our approach</h3>
+          <p>Lucent Ag applies a defence-in-depth security model. All data is encrypted in transit (TLS 1.3+) and at rest (AES-256). Access to production systems is restricted by role-based controls with multi-factor authentication. We conduct regular penetration testing and security audits.</p>
+        </div>
+        <div>
+          <h3 className="text-[15px] font-semibold text-[#0C1F14] mb-2">Infrastructure</h3>
+          <p>Our infrastructure is hosted on enterprise-grade cloud providers with SOC 2 Type II certification. We maintain business continuity and disaster recovery plans with defined RTO and RPO targets.</p>
+        </div>
+        <div>
+          <h3 className="text-[15px] font-semibold text-[#0C1F14] mb-2">Responsible disclosure</h3>
+          <p>If you discover a security vulnerability in Lucent Ag's systems, we encourage responsible disclosure. Please contact our security team at security@lucentag.com. We commit to acknowledging all reports within 48 hours and working transparently with researchers to resolve valid findings.</p>
+        </div>
+        <div>
+          <h3 className="text-[15px] font-semibold text-[#0C1F14] mb-2">Incident response</h3>
+          <p>In the event of a security incident affecting user data, we will notify affected parties and relevant regulatory authorities within the timelines required by applicable law, and provide clear guidance on any steps users should take.</p>
+        </div>
+        <p className="text-[12px] text-[#6B7B6E]/50 border-t border-border pt-5">Security practices are continuously reviewed and updated. Last security audit: Q4 2024.</p>
+      </div>
+    ),
+  },
+};
+
+function LegalModal({ type, onClose }: { type: keyof typeof LEGAL_CONTENT; onClose: () => void }) {
+  const content = LEGAL_CONTENT[type];
+  if (!content) return null;
+  return (
+    <ModalBackdrop onClose={onClose}>
+      <div className="w-full md:w-[680px] max-h-[95vh] md:max-h-[88vh] bg-white md:rounded-3xl overflow-hidden flex flex-col shadow-[0_32px_96px_rgba(12,31,20,0.28)]">
+        <div className="px-8 py-6 border-b border-border flex items-start justify-between shrink-0">
+          <div>
+            <p className="text-[10px] font-semibold tracking-[0.18em] uppercase text-[#C8922A] mb-1"
+              style={{ fontFamily: "'Geist Mono', monospace" }}>Legal</p>
+            <h2 style={{ fontFamily: "'Instrument Serif', serif" }} className="text-[26px] text-[#0C1F14] leading-tight">{content.title}</h2>
+            <p className="text-[11.5px] text-[#6B7B6E] mt-1">{content.date}</p>
+          </div>
+          <button onClick={onClose} className="text-[#6B7B6E] hover:text-[#0C1F14] transition-colors mt-1 ml-6 shrink-0">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+        <div className="overflow-y-auto flex-1 px-8 py-7">
+          {content.body}
+        </div>
+        <div className="px-8 py-4 border-t border-border shrink-0 flex items-center justify-between">
+          <p className="text-[11px] text-[#6B7B6E]/45" style={{ fontFamily: "'Geist Mono', monospace" }}>Lucent Ag Technologies Ltd</p>
+          <button onClick={onClose} className="text-[12.5px] font-medium text-[#1B4332] hover:text-[#0C1F14] transition-colors">Close</button>
+        </div>
+      </div>
+    </ModalBackdrop>
+  );
+}
+
 // ═════════════════════════════════════════════════════════════════════════════
 // Root
 // ═════════════════════════════════════════════════════════════════════════════
 export default function App() {
   const [page, setPage] = useState<Page>("home");
   const [modal, setModal] = useState<ModalType>(null);
+  const [modalHeading, setModalHeading] = useState<string | undefined>(undefined);
 
   const navigate = (target: Page) => {
     setPage(target);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const openModal = useCallback((m: ModalType) => setModal(m), []);
+  const openModal = useCallback((m: ModalType, heading?: string) => { setModal(m); setModalHeading(heading); }, []);
   const closeModal = useCallback(() => setModal(null), []);
 
   return (
@@ -3024,8 +3189,9 @@ export default function App() {
         <SiteFooter navigate={navigate} />
 
         {modal === "demo" && <DemoModal onClose={closeModal} />}
-        {modal === "contact" && <ContactModal onClose={closeModal} />}
+        {modal === "contact" && <ContactModal onClose={closeModal} heading={modalHeading} />}
         {modal === "video" && <VideoModal onClose={closeModal} />}
+        {(modal === "privacy" || modal === "terms" || modal === "cookies" || modal === "security") && <LegalModal type={modal} onClose={closeModal} />}
       </div>
     </ModalCtx.Provider>
   );
