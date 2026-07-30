@@ -2,7 +2,16 @@
   <!DOCTYPE html>
   <html lang="en">
     <head>
-      
+      <!-- Google tag (gtag.js) -->
+      <script async src="https://www.googletagmanager.com/gtag/js?id=G-Q9GF60BHB1"></script>
+      <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        // send_page_view disabled: this is a single-page app, so App.tsx sends a
+        // virtual page_view on every in-app navigation (including the first load) instead.
+        gtag('config', 'G-Q9GF60BHB1', { send_page_view: false });
+      </script>
       <meta charset="UTF-8" />
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <title>Lucent Ag Website</title>
