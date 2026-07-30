@@ -529,7 +529,7 @@ function GlobalNav({ page, navigate }: NavProps) {
         </nav>
 
         <div className="hidden lg:flex items-center gap-3">
-          <a href="#" className="text-[13px] font-medium text-white/45 hover:text-white transition-colors">Sign in</a>
+          {/* <a href="#" className="text-[13px] font-medium text-white/45 hover:text-white transition-colors">Sign in</a> */}
           <DemoBtn className="text-[13px] px-4 py-2" />
         </div>
 
