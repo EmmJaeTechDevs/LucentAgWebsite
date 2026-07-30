@@ -1825,6 +1825,7 @@ function MiniHubDetail() {
 }
 
 function AboutLeadership() {
+  const { open } = useModal();
   return (
     <section className="bg-white py-28 md:py-36 border-t border-border">
       <div className="max-w-[1280px] mx-auto px-6 xl:px-10">
@@ -1922,9 +1923,9 @@ function AboutLeadership() {
             <h3 style={{ fontFamily: "'Instrument Serif', serif" }} className="text-[24px] text-[#0C1F14] mb-3">We are assembling the team that this mission deserves.</h3>
             <p className="text-[15px] text-[#6B7B6E] leading-relaxed max-w-[580px]">Executive profiles will be published as we formalise our leadership structure. If you believe you have a role to play in transforming Africa's post-harvest economy, we would very much like to hear from you.</p>
           </div>
-          <a href="#" className="shrink-0 inline-flex items-center gap-2 bg-[#1B4332] text-white text-[13px] font-medium px-5 py-2.5 rounded-full hover:bg-[#143527] transition-colors self-start">
+          <button onClick={() => open("contact")} className="shrink-0 inline-flex items-center gap-2 bg-[#1B4332] text-white text-[13px] font-medium px-5 py-2.5 rounded-full hover:bg-[#143527] transition-colors self-start">
             Get in touch <ArrowRight className="w-3.5 h-3.5" />
-          </a>
+          </button>
         </Reveal>
       </div>
     </section>
@@ -1977,6 +1978,7 @@ function AboutCareersPreview() {
 }
 
 function AboutCTA() {
+  const { open } = useModal();
   const cards = [
     { Icon: BarChart3,     label: "Request a Demo",         desc: "See the Lucent Ag platform in action. We'll walk you through the intelligence layer, the trade network and the finance rail.", cta: "Book a demo",          primary: true },
     { Icon: Users,         label: "Partner with Lucent Ag", desc: "Whether you are a development organisation, financial institution or logistics operator, there is a partnership model for you.", cta: "Start a conversation", primary: false },
@@ -1999,9 +2001,15 @@ function AboutCTA() {
                 <h3 className={`text-[17px] font-semibold mb-2 ${primary ? "text-white" : "text-[#0C1F14]"}`} style={{ fontFamily: "'Instrument Serif', serif" }}>{label}</h3>
                 <p className={`text-[14px] leading-relaxed ${primary ? "text-white/60" : "text-[#6B7B6E]"}`}>{desc}</p>
               </div>
-              <a href="#" className={`mt-auto inline-flex items-center gap-2 text-[13px] font-medium transition-all group ${primary ? "text-[#C8922A] hover:gap-3" : "text-[#1B4332] hover:gap-3"}`}>
-                {cta} <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
-              </a>
+              {cta === "Get in touch" ? (
+                <button onClick={() => open("contact")} className={`mt-auto inline-flex items-center gap-2 text-[13px] font-medium transition-all group ${primary ? "text-[#C8922A] hover:gap-3" : "text-[#1B4332] hover:gap-3"}`}>
+                  {cta} <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                </button>
+              ) : (
+                <a href="#" className={`mt-auto inline-flex items-center gap-2 text-[13px] font-medium transition-all group ${primary ? "text-[#C8922A] hover:gap-3" : "text-[#1B4332] hover:gap-3"}`}>
+                  {cta} <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                </a>
+              )}
             </Reveal>
           ))}
         </div>
