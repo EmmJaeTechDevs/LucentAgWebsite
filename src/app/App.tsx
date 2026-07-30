@@ -18,7 +18,7 @@ import leaderAdvisor2 from "@/assets/Advisor.png";
 // Types & Routing
 // ─────────────────────────────────────────────────────────────────────────────
 type Page = "home" | "about" | "team" | "ecosystem" | "solutions" | "intelligence" | "careers";
-type ModalType = "demo" | "contact" | null;
+type ModalType = "demo" | "contact" | "video" | null;
 
 interface Leader {
   name: string;
@@ -628,6 +628,7 @@ function SiteFooter({ navigate }: { navigate: (p: Page) => void }) {
 
 function HeroSection() {
   const { ref, inView } = useInView(0.05);
+  const { open } = useModal();
   return (
     <section className="relative min-h-screen flex flex-col justify-center overflow-hidden bg-[#0C1F14]">
       <GridBg />
@@ -655,9 +656,9 @@ function HeroSection() {
         </p>
         <div className="flex flex-col sm:flex-row items-start gap-4">
           <DemoBtn className="text-[14px] px-6 py-3.5" />
-          <a href="#" className="inline-flex items-center gap-2 border border-white/18 text-white text-[14px] font-medium px-6 py-3.5 rounded-full hover:bg-white/8 hover:border-white/30 transition-all duration-200">
+          <button onClick={() => open("video")} className="inline-flex items-center gap-2 border border-white/18 text-white text-[14px] font-medium px-6 py-3.5 rounded-full hover:bg-white/8 hover:border-white/30 transition-all duration-200">
             Watch overview
-          </a>
+          </button>
         </div>
         <div className="mt-16 flex flex-wrap gap-x-8 gap-y-3">
           {[{ label: "Network nodes online", value: "0", live: true }, { label: "Tonnes tracked today", value: "0 t" }, { label: "Active markets", value: "0 countries" }].map(s => (
@@ -2240,7 +2241,7 @@ function AdvisoryBoard() {
           <div className="w-10 h-10 rounded-xl bg-[#1B4332] flex items-center justify-center shrink-0">
             <Star className="w-5 h-5 text-[#C8922A]" strokeWidth={1.5} />
           </div>
-          <p className="text-[15px] text-[#6B7B6E] leading-relaxed flex-1">Advisor profiles are published as advisory partnerships are formalised. If you have deep expertise in food systems, agri-finance or pan-African development and wish to explore an advisory role, we would welcome a conversation.</p>
+          <p className="text-[15px] text-[#6B7B6E] leading-relaxed flex-1">Advisor profiles are published as advisory relationships formalise. If you have deep expertise in food systems, agri-finance or pan-African development and wish to explore an advisory role, we would welcome a conversation.</p>
           <a href="#" className="shrink-0 inline-flex items-center gap-2 text-[13px] font-medium text-[#1B4332] border-b border-[rgba(27,67,50,0.22)] pb-0.5 hover:border-[#1B4332] transition-colors whitespace-nowrap">
             Contact us <ArrowRight className="w-3.5 h-3.5" />
           </a>
@@ -2916,6 +2917,65 @@ function ContactModal({ onClose }: { onClose: () => void }) {
   );
 }
 
+const OVERVIEW_VIDEO_URL = "https://res.cloudinary.com/malgek8m/video/upload/v1785399416/VID-20260729-WA0056_ejtthm.mp4";
+
+function VideoModal({ onClose }: { onClose: () => void }) {
+  const { open } = useModal();
+  const [playing, setPlaying] = useState(false);
+
+  return (
+    <ModalBackdrop onClose={onClose}>
+      <div className="w-full md:w-[860px] bg-[#0C1F14] md:rounded-3xl overflow-hidden shadow-[0_32px_96px_rgba(12,31,20,0.45)]">
+        <div className="flex items-center justify-between px-7 py-5 border-b border-white/8">
+          <div className="flex items-center gap-3">
+            <LogoMark size={24} light />
+            <div>
+              <p className="text-[11px] text-white/30 leading-none" style={{ fontFamily: "'Geist Mono', monospace" }}>STAKEHOLDER OVERVIEW</p>
+              <p className="text-[14px] text-white font-medium leading-none mt-0.5">Lucent Ag — Platform Overview</p>
+            </div>
+          </div>
+          <button onClick={onClose} className="text-white/30 hover:text-white transition-colors">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        <div className="relative aspect-video bg-[#060F0A] overflow-hidden">
+          {playing ? (
+            <video src={OVERVIEW_VIDEO_URL} controls autoPlay className="w-full h-full object-contain bg-black" />
+          ) : (
+            <>
+              <img src={px(IMG.aerialField, 1200, 675)} alt="Africa's agricultural landscapes" className="w-full h-full object-cover opacity-30" />
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-6 px-10 text-center">
+                <button onClick={() => setPlaying(true)} aria-label="Play overview video"
+                  className="w-20 h-20 rounded-full border-2 border-white/25 flex items-center justify-center backdrop-blur-sm bg-white/5 hover:bg-white/12 hover:border-white/40 transition-all duration-200">
+                  <svg width="26" height="26" viewBox="0 0 24 24" fill="white" className="ml-1"><polygon points="5 3 19 12 5 21 5 3" /></svg>
+                </button>
+                <div>
+                  <p style={{ fontFamily: "'Instrument Serif', serif" }} className="text-[22px] text-white italic mb-2">Stakeholder Overview</p>
+                  <p className="text-[13.5px] text-white/50 max-w-[420px] leading-relaxed">
+                    A closer look at how farmers, aggregators, warehouses, buyers and financiers connect on one platform — from harvest to market to capital.
+                  </p>
+                </div>
+              </div>
+              <div className="absolute inset-0 bg-gradient-to-t from-[#0C1F14]/60 to-transparent pointer-events-none" />
+            </>
+          )}
+        </div>
+
+        <div className="px-7 py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <p className="text-[13px] text-white/38 leading-relaxed max-w-[440px]">
+            Want a walkthrough tailored to your role? Request a demo and our team will take you through it live.
+          </p>
+          <button onClick={() => { onClose(); setTimeout(() => open("demo"), 50); }}
+            className="shrink-0 inline-flex items-center gap-2 bg-[#C8922A] text-white text-[13px] font-medium px-5 py-2.5 rounded-full hover:bg-[#b07d22] transition-colors whitespace-nowrap">
+            Request a Demo <ArrowRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      </div>
+    </ModalBackdrop>
+  );
+}
+
 // ═════════════════════════════════════════════════════════════════════════════
 // Root
 // ═════════════════════════════════════════════════════════════════════════════
@@ -2956,6 +3016,7 @@ export default function App() {
 
         {modal === "demo" && <DemoModal onClose={closeModal} />}
         {modal === "contact" && <ContactModal onClose={closeModal} />}
+        {modal === "video" && <VideoModal onClose={closeModal} />}
       </div>
     </ModalCtx.Provider>
   );
