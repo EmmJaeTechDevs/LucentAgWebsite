@@ -2221,6 +2221,7 @@ function CrossFunctionalExpertise() {
 }
 
 function AdvisoryBoard() {
+  const { open } = useModal();
   const DOMAINS_ADV = ["Agri-Finance & Capital Markets", "Food Systems Policy", "Agricultural Technology", "African Development Economics"];
   return (
     <section className="bg-[#F6F3EE] py-28 md:py-36">
@@ -2250,9 +2251,9 @@ function AdvisoryBoard() {
             <Star className="w-5 h-5 text-[#C8922A]" strokeWidth={1.5} />
           </div>
           <p className="text-[15px] text-[#6B7B6E] leading-relaxed flex-1">Advisor profiles are published as advisory relationships formalise. If you have deep expertise in food systems, agri-finance or pan-African development and wish to explore an advisory role, we would welcome a conversation.</p>
-          <a href="#" className="shrink-0 inline-flex items-center gap-2 text-[13px] font-medium text-[#1B4332] border-b border-[rgba(27,67,50,0.22)] pb-0.5 hover:border-[#1B4332] transition-colors whitespace-nowrap">
+          <button onClick={() => open("contact")} className="shrink-0 inline-flex items-center gap-2 text-[13px] font-medium text-[#1B4332] border-b border-[rgba(27,67,50,0.22)] pb-0.5 hover:border-[#1B4332] transition-colors whitespace-nowrap">
             Contact us <ArrowRight className="w-3.5 h-3.5" />
-          </a>
+          </button>
         </Reveal>
       </div>
     </section>
