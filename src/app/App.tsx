@@ -2953,7 +2953,7 @@ function VideoModal({ onClose }: { onClose: () => void }) {
                 <div>
                   <p style={{ fontFamily: "'Instrument Serif', serif" }} className="text-[22px] text-white italic mb-2">Stakeholder Overview</p>
                   <p className="text-[13.5px] text-white/50 max-w-[420px] leading-relaxed">
-                    A closer look at how farmers, aggregators, warehouses, buyers and financiers connect on one platform — from harvest to market to capital.
+                    Video available upon request
                   </p>
                 </div>
               </div>
